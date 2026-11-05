@@ -39,7 +39,10 @@ async function callModel(model: string, key: string, system: string, user: strin
       generationConfig: { responseMimeType: "application/json", temperature: 0.3, maxOutputTokens: 400 },
     }),
   });
-  if (res.status === 429) return { ok: false, reason: "rate-limited" };
+  if (res.status === 429) {
+    console.warn(`Gemini ${model} returned 429 (quota or rate limit)`);
+    return { ok: false, reason: "rate-limited" };
+  }
   if (!res.ok) {
     // Log status and Google's error text (never the key) so failures are diagnosable.
     const body = await res.text().catch(() => "");

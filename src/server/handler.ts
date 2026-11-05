@@ -43,7 +43,10 @@ export async function handleCoach(req: Request, env: GeminiEnv, fetchImpl: Fetch
   if (typeof tipId !== "string" || !(tipId in TIPS)) return json({ error: "Unknown tip" }, 400);
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (rateLimited(ip)) return json({ source: "built-in", reason: "rate-limited" });
+  if (rateLimited(ip)) {
+    console.warn("Wisp's own per-IP rate limit hit");
+    return json({ source: "built-in", reason: "rate-limited" });
+  }
 
   const r = await personalize(draft, tipId as TipId, env, fetchImpl);
   if (!r.ok) return json({ source: "built-in", reason: r.reason });
