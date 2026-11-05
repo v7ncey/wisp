@@ -9,7 +9,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "eval": "tsx scripts/eval.ts",
-    "eval:gemini": "tsx scripts/eval-gemini.ts"
+    "eval:gemini": "tsx --env-file-if-exists=.env.local scripts/eval-gemini.ts"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",

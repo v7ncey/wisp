@@ -10,7 +10,7 @@ import { score, type LabeledPrompt } from "./eval";
 
 const env = { GEMINI_API_KEY: process.env.GEMINI_API_KEY ?? process.env.GEMINI_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL };
 if (!env.GEMINI_API_KEY) {
-  console.log("GEMINI_API_KEY isn't set, so the Gemini comparison was skipped. Nothing was written.");
+  console.log("GEMINI_API_KEY (or GEMINI_KEY) isn't set, so the Gemini comparison was skipped. Nothing was written. Put it in .env.local (git ignores it).");
   process.exit(0);
 }
 
