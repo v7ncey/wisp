@@ -47,7 +47,12 @@ async function callModel(model: string, key: string, system: string, user: strin
     // 503 means "model overloaded": show it to the user as busy, not broken.
     return res.status === 503 ? { ok: false, reason: "rate-limited", overloaded: true } : { ok: false, reason: "error" };
   }
-  const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+  const data = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    modelVersion?: string;
+    usageMetadata?: { thoughtsTokenCount?: number; candidatesTokenCount?: number };
+  };
+  console.info(`Gemini ${data.modelVersion ?? model} ok: thoughts=${data.usageMetadata?.thoughtsTokenCount ?? 0} output=${data.usageMetadata?.candidatesTokenCount ?? 0}`);
   const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
   try {
     return { ok: true, value: JSON.parse(text) };
