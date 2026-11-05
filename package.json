@@ -1,0 +1,22 @@
+{
+  "name": "wisp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wisp: a small companion that watches how you prompt AI chat sites and pops up with tips you can click to apply.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "eval": "tsx scripts/eval.ts",
+    "eval:gemini": "tsx scripts/eval-gemini.ts"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.24.2",
+    "fflate": "^0.8.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

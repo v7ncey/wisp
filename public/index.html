@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wisp: an AI coach for how you use AI</title>
+  <meta name="description" content="Wisp watches how you prompt AI chat assistants and pops up with tips you can click to apply. Try it in the browser with no sign-in." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="favicon.svg" alt="" width="34" height="34" />
+      <div>
+        <h1>Wisp</h1>
+        <p class="tag">A small coach that watches how you prompt AI and nudges you to do it better.</p>
+      </div>
+    </div>
+    <nav>
+      <a href="#extension">Get the extension</a>
+      <a href="https://github.com/v7ncey/wisp" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="chat-card" aria-label="Practice chat">
+      <div class="chat-head">
+        <div>
+          <strong id="chat-title">Practice chat</strong>
+          <span class="pill">Replies are canned. There's no real AI in this chat.</span>
+        </div>
+        <button id="new-chat" class="ghost" type="button">New chat</button>
+      </div>
+      <ol id="messages" class="messages" aria-live="polite">
+        <li class="empty">Type a request the way you normally would, or pick a scenario. When you pause typing, Wisp checks your draft.</li>
+      </ol>
+      <form id="composer" class="composer">
+        <label for="draft" class="sr">Message</label>
+        <textarea id="draft" rows="3" placeholder="Ask anything… try “build me a website”"></textarea>
+        <button type="submit" id="send">Send</button>
+      </form>
+      <div id="wisp-host"></div>
+    </section>
+
+    <aside class="side">
+      <section class="card" id="scenario-card">
+        <h2>Try a scenario</h2>
+        <p class="fine">Each one types a realistic prompt for you. Wisp's 3-minute quiet period is shortened to a few seconds on this page.</p>
+        <div id="scenarios" class="scenarios"></div>
+      </section>
+
+      <section class="card">
+        <h2>Your stats</h2>
+        <p class="fine">These counts and Wisp's memory stay in this browser.</p>
+        <dl id="stats" class="stats"></dl>
+        <label class="toggle"><input id="ai-toggle" type="checkbox" checked /> Personalize tips with AI (Gemini)</label>
+        <p class="fine" id="ai-note">When this is on, the draft that triggered a tip is sent to Google Gemini to tailor the wording. If the AI is down or busy, Wisp shows its built-in tip and says so.</p>
+        <button id="reset" class="link" type="button">Reset Wisp's memory</button>
+      </section>
+
+      <section class="card">
+        <h2>How accurate are the rules?</h2>
+        <p class="fine" id="eval-caption"></p>
+        <table class="eval">
+          <thead><tr><th>Tip</th><th title="When it fires, how often it should have">Precision</th><th title="Of the prompts that needed it, how many it caught">Recall</th></tr></thead>
+          <tbody id="eval-body"></tbody>
+        </table>
+        <p class="fine" id="eval-quiet"></p>
+      </section>
+
+      <section class="card" id="extension">
+        <h2>Use it on ChatGPT and Claude</h2>
+        <p>The Chrome extension runs the same coach on <b>chatgpt.com</b> and <b>claude.ai</b>. It reads only the text box and your sent messages on those two sites, and keeps its memory on your computer.</p>
+        <ol class="steps">
+          <li><a href="wisp-extension.zip" download>Download the extension (.zip)</a> and unzip it.</li>
+          <li>Open <code>chrome://extensions</code> and turn on <b>Developer mode</b>.</li>
+          <li>Click <b>Load unpacked</b> and pick the unzipped folder.</li>
+        </ol>
+        <p class="fine">Not on the Chrome Web Store yet. AI personalization is off until you turn it on from Wisp's menu.</p>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <p>Built by <a href="https://v7ncent.vercel.app" target="_blank" rel="noopener">Vincent Lin</a>. Wisp is an independent project and isn't affiliated with OpenAI, Anthropic or Google.</p>
+  </footer>
+
+  <script type="module" src="assets/demo.js"></script>
+</body>
+</html>

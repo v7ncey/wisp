@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Wisp: AI prompting coach",
+  "version": "0.1.0",
+  "description": "A small companion that watches how you prompt ChatGPT and Claude and pops up with tips you can click to apply.",
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "permissions": ["storage"],
+  "host_permissions": ["https://wisp-coach.vercel.app/*"],
+  "background": { "service_worker": "dist/background.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://claude.ai/*"],
+      "js": ["dist/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

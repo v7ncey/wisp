@@ -1,0 +1,168 @@
+{
+  "method": "rules",
+  "runAt": "2026-11-05",
+  "dev": {
+    "perDetector": [
+      {
+        "id": "vague-fix",
+        "truePos": 8,
+        "falsePos": 0,
+        "falseNeg": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "id": "paste-no-ask",
+        "truePos": 4,
+        "falsePos": 0,
+        "falseNeg": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "id": "vague-build",
+        "truePos": 11,
+        "falsePos": 1,
+        "falseNeg": 0,
+        "precision": 0.9166666666666666,
+        "recall": 1
+      },
+      {
+        "id": "facts-no-sources",
+        "truePos": 10,
+        "falsePos": 0,
+        "falseNeg": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      {
+        "id": "no-example",
+        "truePos": 9,
+        "falsePos": 0,
+        "falseNeg": 0,
+        "precision": 1,
+        "recall": 1
+      }
+    ],
+    "mistakes": [
+      {
+        "text": "write a bio for my portfolio",
+        "expected": [
+          "no-example"
+        ],
+        "got": [
+          "vague-build",
+          "no-example"
+        ]
+      }
+    ],
+    "total": 82,
+    "quiet": {
+      "total": 40,
+      "correct": 40
+    }
+  },
+  "heldout": {
+    "perDetector": [
+      {
+        "id": "vague-fix",
+        "truePos": 3,
+        "falsePos": 0,
+        "falseNeg": 1,
+        "precision": 1,
+        "recall": 0.75
+      },
+      {
+        "id": "paste-no-ask",
+        "truePos": 2,
+        "falsePos": 1,
+        "falseNeg": 0,
+        "precision": 0.6666666666666666,
+        "recall": 1
+      },
+      {
+        "id": "vague-build",
+        "truePos": 5,
+        "falsePos": 3,
+        "falseNeg": 0,
+        "precision": 0.625,
+        "recall": 1
+      },
+      {
+        "id": "facts-no-sources",
+        "truePos": 5,
+        "falsePos": 0,
+        "falseNeg": 1,
+        "precision": 1,
+        "recall": 0.8333333333333334
+      },
+      {
+        "id": "no-example",
+        "truePos": 5,
+        "falsePos": 0,
+        "falseNeg": 1,
+        "precision": 1,
+        "recall": 0.8333333333333334
+      }
+    ],
+    "mistakes": [
+      {
+        "text": "i need a program that does my taxes",
+        "expected": [],
+        "got": [
+          "vague-build"
+        ]
+      },
+      {
+        "text": "whats the best way to build a website as a beginner",
+        "expected": [],
+        "got": [
+          "vague-build"
+        ]
+      },
+      {
+        "text": "wrong answer",
+        "expected": [
+          "vague-fix"
+        ],
+        "got": []
+      },
+      {
+        "text": "what % of americans own a pet",
+        "expected": [
+          "facts-no-sources"
+        ],
+        "got": []
+      },
+      {
+        "text": "write a tiktok script about study tips",
+        "expected": [
+          "no-example"
+        ],
+        "got": [
+          "vague-build",
+          "no-example"
+        ]
+      },
+      {
+        "text": "write a short story about a dragon",
+        "expected": [
+          "no-example"
+        ],
+        "got": []
+      },
+      {
+        "text": "Turn these meeting notes into a list of action items with owners:\n\nMeeting notes 10/14: Di",
+        "expected": [],
+        "got": [
+          "paste-no-ask"
+        ]
+      }
+    ],
+    "total": 40,
+    "quiet": {
+      "total": 17,
+      "correct": 14
+    }
+  }
+}

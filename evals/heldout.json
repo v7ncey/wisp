@@ -1,0 +1,50 @@
+{
+  "about": "Held-out prompts written AFTER the rules were frozen (2026-11-05) and scored once without tuning. Still written by the builder, so still biased; real user prompts are the next step.",
+  "prompts": [
+    { "text": "can u make a website for my friends band", "expect": ["vague-build"] },
+    { "text": "build an ai app", "expect": ["vague-build"] },
+    { "text": "i need a program that does my taxes", "expect": [] },
+    { "text": "create a simple game", "expect": ["vague-build"] },
+    { "text": "code a calculator", "expect": [] },
+    { "text": "develop a dashboard for our sales team", "expect": ["vague-build"] },
+    { "text": "set up a website for my club", "expect": ["vague-build"] },
+    { "text": "build a weather app in javascript that shows a 5 day forecast from an api, plan first", "expect": [] },
+    { "text": "whats the best way to build a website as a beginner", "expect": [] },
+
+    { "text": "nope still not working", "expect": ["vague-fix"] },
+    { "text": "that didn't work either", "expect": ["vague-fix"] },
+    { "text": "wrong answer", "expect": ["vague-fix"] },
+    { "text": "ugh it broke again", "expect": ["vague-fix"] },
+    { "text": "the page doesn't work, console says Uncaught ReferenceError: x is not defined", "expect": [] },
+    { "text": "why is my wifi not working", "expect": [] },
+
+    { "text": "how much does the average american spend on groceries", "expect": ["facts-no-sources"] },
+    { "text": "what year did the berlin wall fall", "expect": ["facts-no-sources"] },
+    { "text": "give me data on how many students drop out of college", "expect": ["facts-no-sources"] },
+    { "text": "is coffee bad for you according to science", "expect": ["facts-no-sources"] },
+    { "text": "what % of americans own a pet", "expect": ["facts-no-sources"] },
+    { "text": "how many jobs will AI replace by 2030? link your sources", "expect": [] },
+    { "text": "how many tablespoons in a cup", "expect": ["facts-no-sources"] },
+
+    { "text": "write a thank you email to my interviewer", "expect": ["no-example"] },
+    { "text": "draft a speech for graduation", "expect": ["no-example"] },
+    { "text": "write a tiktok script about study tips", "expect": ["no-example"] },
+    { "text": "write a product description for handmade candles", "expect": ["no-example"] },
+    { "text": "write a professional bio, 3 sentences, third person", "expect": [] },
+    { "text": "make a newsletter for our neighborhood association", "expect": ["no-example"] },
+    { "text": "write a short story about a dragon", "expect": ["no-example"] },
+
+    { "text": "I've been working on my personal statement for weeks and I still don't love it. I grew up in a small town where most people never left, and I always felt like I wanted to see more of the world. When I was fifteen I started volunteering at the local library, teaching older adults how to use computers. One woman, Mrs. Alvarez, wanted to video call her grandkids in another country. It took us six weeks, but the first time she saw their faces on the screen, she cried, and so did I. That moment showed me that technology is only as good as the people it helps. Since then, I've taught coding to kids, built a small app for our food pantry, and started studying computer science. I want to keep building things that make people feel closer, not further apart. In college, I hope to study human-computer interaction and keep finding ways to make technology kinder.\n\nis this good?", "expect": ["paste-no-ask"] },
+    { "text": "Meeting notes 10/14: Discussed Q4 launch timeline. Design is two weeks behind because of the new onboarding flow. Engineering says backend is ready but needs QA. Marketing wants the launch before Thanksgiving to catch holiday traffic. Sarah suggested cutting the referral feature to save time; Tom disagreed because referrals were the main ask from customers in the survey. We agreed to revisit after design shares updated mocks on Friday. Budget for ads approved at the same level as Q3. Open questions: who owns the launch email, do we need legal review for the new terms page, and whether support needs extra staff for launch week. Next meeting is Monday at 10am. Action items: design to send mocks, engineering to start QA, marketing to draft launch plan, and Tom to pull referral data from the survey so the team can decide whether to keep it in scope for the first release or move it later.", "expect": ["paste-no-ask"] },
+    { "text": "Turn these meeting notes into a list of action items with owners:\n\nMeeting notes 10/14: Discussed Q4 launch timeline. Design is two weeks behind because of the new onboarding flow. Engineering says backend is ready but needs QA. Marketing wants the launch before Thanksgiving to catch holiday traffic. Sarah suggested cutting the referral feature to save time; Tom disagreed because referrals were the main ask from customers in the survey. We agreed to revisit after design shares updated mocks on Friday. Budget for ads approved at the same level as Q3. Open questions: who owns the launch email, do we need legal review for the new terms page, and whether support needs extra staff for launch week. Next meeting is Monday at 10am. Action items: design to send mocks, engineering to start QA, marketing to draft launch plan, and Tom to pull referral data.", "expect": [] },
+
+    { "text": "good morning!", "expect": [] },
+    { "text": "explain the difference between RAM and storage", "expect": [] },
+    { "text": "help me pick between two job offers, one pays more but the other has better mentorship", "expect": [] },
+    { "text": "give me a recipe for vegan brownies", "expect": [] },
+    { "text": "what should I name my startup", "expect": [] },
+    { "text": "make this more concise: We are writing to inform you that the event has been postponed.", "expect": [] },
+    { "text": "can you help me understand recursion with a simple example", "expect": [] },
+    { "text": "write a function that reverses a string in python", "expect": [] }
+  ]
+}
