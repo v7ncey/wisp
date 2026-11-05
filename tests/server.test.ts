@@ -37,6 +37,27 @@ describe("POST /api/coach", () => {
     expect(await res.json()).toEqual({ source: "built-in", reason: "rate-limited" });
   });
 
+  it("tries the backup model once when the main model is overloaded (503)", async () => {
+    const urls: string[] = [];
+    const good = JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ noticed: "N", why: "W" }) }] } }] });
+    const fake = (async (url: string) => {
+      urls.push(url);
+      return urls.length === 1 ? new Response("{}", { status: 503 }) : new Response(good, { status: 200 });
+    }) as unknown as Fetch;
+    const res = await handleCoach(post({ draft: "fix it", tipId: "vague-fix" }, "g"), key, fake);
+    expect(await res.json()).toEqual({ source: "gemini", noticed: "N", why: "W" });
+    expect(urls.length).toBe(2);
+    expect(urls[1].includes("gemini-flash-lite-latest")).toBe(true);
+  });
+
+  it("shows 'busy' when both models are overloaded", async () => {
+    let calls = 0;
+    const fake = (async () => (calls++, new Response("{}", { status: 503 }))) as unknown as Fetch;
+    const res = await handleCoach(post({ draft: "fix it", tipId: "vague-fix" }, "h"), key, fake);
+    expect(await res.json()).toEqual({ source: "built-in", reason: "rate-limited" });
+    expect(calls).toBe(2);
+  });
+
   it("falls back when the network call throws", async () => {
     const boom = (async () => {
       throw new Error("down");

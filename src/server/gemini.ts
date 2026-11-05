@@ -22,32 +22,52 @@ export interface Personalized {
 
 export type GeminiResult<T> = { ok: true; value: T } | { ok: false; reason: "no-key" | "timeout" | "rate-limited" | "bad-response" | "error" };
 
+// Tried once when the main model is overloaded (HTTP 503), which happens on the free tier.
+export const BACKUP_MODEL = "gemini-flash-lite-latest";
+
+type Attempt = { ok: true; value: unknown } | { ok: false; reason: "timeout" | "rate-limited" | "bad-response" | "error"; overloaded?: boolean };
+
+async function callModel(model: string, key: string, system: string, user: string, signal: AbortSignal, fetchImpl: Fetch): Promise<Attempt> {
+  const res = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    method: "POST",
+    signal,
+    headers: { "content-type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{ role: "user", parts: [{ text: user }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.3, maxOutputTokens: 400 },
+    }),
+  });
+  if (res.status === 429) return { ok: false, reason: "rate-limited" };
+  if (!res.ok) {
+    // Log status and Google's error text (never the key) so failures are diagnosable.
+    const body = await res.text().catch(() => "");
+    console.warn(`Gemini ${model} returned ${res.status}: ${body.slice(0, 300)}`);
+    // 503 means "model overloaded": show it to the user as busy, not broken.
+    return res.status === 503 ? { ok: false, reason: "rate-limited", overloaded: true } : { ok: false, reason: "error" };
+  }
+  const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch {
+    return { ok: false, reason: "bad-response" };
+  }
+}
+
 async function callGemini(env: GeminiEnv, system: string, user: string, fetchImpl: Fetch): Promise<GeminiResult<unknown>> {
   if (!env.GEMINI_API_KEY) return { ok: false, reason: "no-key" };
   const model = env.GEMINI_MODEL || DEFAULT_MODEL;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    const res = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: "POST",
-      signal: ctrl.signal,
-      headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: user }] }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.3, maxOutputTokens: 400 },
-      }),
-    });
-    if (res.status === 429) return { ok: false, reason: "rate-limited" };
-    if (!res.ok) return { ok: false, reason: "error" };
-    const data = (await res.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
-    try {
-      return { ok: true, value: JSON.parse(text) };
-    } catch {
-      return { ok: false, reason: "bad-response" };
+    let result = await callModel(model, env.GEMINI_API_KEY, system, user, ctrl.signal, fetchImpl);
+    if (!result.ok && result.overloaded && model !== BACKUP_MODEL) {
+      result = await callModel(BACKUP_MODEL, env.GEMINI_API_KEY, system, user, ctrl.signal, fetchImpl);
     }
+    return result.ok ? result : { ok: false, reason: result.reason };
   } catch (e) {
+    if ((e as Error).name !== "AbortError") console.warn(`Gemini call failed: ${(e as Error).message}`);
     return { ok: false, reason: (e as Error).name === "AbortError" ? "timeout" : "error" };
   } finally {
     clearTimeout(timer);
