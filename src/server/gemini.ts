@@ -1,6 +1,6 @@
-import { TIPS } from "../core/library";
+import { TIPS } from "../core/library.js";
 import type { TipId } from "../core/types";
-import { DRAFT_DETECTOR_IDS, type DraftDetectorId } from "../core/detectors";
+import { DRAFT_DETECTOR_IDS, type DraftDetectorId } from "../core/detectors.js";
 
 export const MAX_DRAFT_CHARS = 2000;
 const TIMEOUT_MS = 6000;

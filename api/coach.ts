@@ -1,4 +1,4 @@
-import { handleCoach } from "../src/server/handler";
+import { handleCoach } from "../src/server/handler.js";
 
 // Vercel Node function using the Web Request/Response API.
 const env = () => ({ GEMINI_API_KEY: process.env.GEMINI_API_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL });

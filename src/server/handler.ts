@@ -1,6 +1,6 @@
-import { TIPS } from "../core/library";
+import { TIPS } from "../core/library.js";
 import type { TipId } from "../core/types";
-import { MAX_DRAFT_CHARS, personalize, type Fetch, type GeminiEnv } from "./gemini";
+import { MAX_DRAFT_CHARS, personalize, type Fetch, type GeminiEnv } from "./gemini.js";
 
 const CORS = {
   "access-control-allow-origin": "*",
