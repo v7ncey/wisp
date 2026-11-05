@@ -25,7 +25,7 @@ createServer(async (req, res) => {
     for await (const c of req) chunks.push(c as Buffer);
     const r = await handleCoach(
       new Request(url, { method: req.method, headers: req.headers as HeadersInit, body: req.method === "POST" ? Buffer.concat(chunks) : undefined }),
-      { GEMINI_API_KEY: process.env.GEMINI_API_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL },
+      { GEMINI_API_KEY: process.env.GEMINI_API_KEY ?? process.env.GEMINI_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL },
     );
     res.writeHead(r.status, Object.fromEntries(r.headers));
     res.end(Buffer.from(await r.arrayBuffer()));

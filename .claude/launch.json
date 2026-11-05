@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wisp-demo",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "scripts/serve.ts"],
+      "port": 5178
+    }
+  ]
+}

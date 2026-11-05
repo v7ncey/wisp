@@ -8,7 +8,7 @@ import { classify } from "../src/server/gemini";
 import { detectDraft, type DraftDetectorId } from "../src/core/detectors";
 import { score, type LabeledPrompt } from "./eval";
 
-const env = { GEMINI_API_KEY: process.env.GEMINI_API_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL };
+const env = { GEMINI_API_KEY: process.env.GEMINI_API_KEY ?? process.env.GEMINI_KEY, GEMINI_MODEL: process.env.GEMINI_MODEL };
 if (!env.GEMINI_API_KEY) {
   console.log("GEMINI_API_KEY isn't set, so the Gemini comparison was skipped. Nothing was written.");
   process.exit(0);
