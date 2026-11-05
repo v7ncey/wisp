@@ -22,25 +22,34 @@ for (const [name, file] of [["dev", "evals/prompts.json"], ["heldout", "evals/he
   const { prompts } = JSON.parse(readFileSync(file, "utf8")) as { prompts: LabeledPrompt[] };
   const gemini = new Map<string, DraftDetectorId[]>();
   const latencies: number[] = [];
-  let failures = 0;
+  const failed: string[] = [];
   for (const [i, p] of prompts.entries()) {
+    // Retry Google's transient errors (busy, timeout) so they aren't scored as "stayed quiet".
     const t0 = Date.now();
-    const r = await classify(p.text, env);
-    latencies.push(Date.now() - t0);
-    if (r.ok) gemini.set(p.text, r.value);
-    else {
-      failures++;
-      gemini.set(p.text, []);
+    let r = await classify(p.text, env);
+    if (r.ok) latencies.push(Date.now() - t0);
+    for (let attempt = 1; !r.ok && attempt <= 3; attempt++) {
+      await sleep(PACE_MS * attempt);
+      const t1 = Date.now();
+      r = await classify(p.text, env);
+      if (r.ok) latencies.push(Date.now() - t1);
     }
-    process.stdout.write(`\r${name}: ${i + 1}/${prompts.length} (failures ${failures})`);
+    if (r.ok) gemini.set(p.text, r.value);
+    else failed.push(p.text);
+    process.stdout.write(`\r${name}: ${i + 1}/${prompts.length} (unanswered ${failed.length})`);
     await sleep(PACE_MS);
   }
-  const g = score(prompts, (t) => gemini.get(t) ?? []);
-  const r = score(prompts, detectDraft);
+  // Score both on the same prompts: the ones Gemini actually answered.
+  const answered = prompts.filter((p) => gemini.has(p.text));
+  const g = score(answered, (t) => gemini.get(t) ?? []);
+  const r = score(answered, detectDraft);
+  const failures = failed.length;
   latencies.sort((a, b) => a - b);
   out[name] = {
-    gemini: { ...g, failures, medianLatencyMs: latencies[Math.floor(latencies.length / 2)] },
-    rules: { ...r, medianLatencyMs: 0 },
+    scoredOn: answered.length,
+    of: prompts.length,
+    gemini: { ...g, unanswered: failures, medianLatencyMs: latencies[Math.floor(latencies.length / 2)] },
+    rules: r,
   };
   console.log(`\n${name}: Gemini stayed quiet ${g.quiet.correct}/${g.quiet.total}, rules ${r.quiet.correct}/${r.quiet.total}; Gemini mistakes ${g.mistakes.length}, rules ${r.mistakes.length}; Gemini failures ${failures}`);
 }
