@@ -47,7 +47,7 @@ describe("POST /api/coach", () => {
     const res = await handleCoach(post({ draft: "fix it", tipId: "vague-fix" }, "g"), key, fake);
     expect(await res.json()).toEqual({ source: "gemini", noticed: "N", why: "W" });
     expect(urls.length).toBe(2);
-    expect(urls[1].includes("gemini-flash-lite-latest")).toBe(true);
+    expect(urls[1].includes("/models/gemini-flash-latest:")).toBe(true);
   });
 
   it("shows 'busy' when both models are overloaded", async () => {

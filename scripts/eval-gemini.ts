@@ -17,7 +17,7 @@ if (!env.GEMINI_API_KEY) {
 const PACE_MS = Number(process.env.PACE_MS ?? 6500);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const out: Record<string, unknown> = { method: "gemini-vs-rules", model: env.GEMINI_MODEL || "gemini-flash-latest", runAt: new Date().toISOString() };
+const out: Record<string, unknown> = { method: "gemini-vs-rules", model: env.GEMINI_MODEL || "gemini-flash-lite-latest", runAt: new Date().toISOString() };
 for (const [name, file] of [["dev", "evals/prompts.json"], ["heldout", "evals/heldout.json"]] as const) {
   const { prompts } = JSON.parse(readFileSync(file, "utf8")) as { prompts: LabeledPrompt[] };
   const gemini = new Map<string, DraftDetectorId[]>();

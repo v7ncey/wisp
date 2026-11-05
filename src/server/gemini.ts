@@ -4,7 +4,8 @@ import { DRAFT_DETECTOR_IDS, type DraftDetectorId } from "../core/detectors.js";
 
 export const MAX_DRAFT_CHARS = 2000;
 const TIMEOUT_MS = 6000;
-const DEFAULT_MODEL = "gemini-flash-latest";
+// Flash-Lite answers fast enough for a pop-up; the full Flash model timed out in testing.
+const DEFAULT_MODEL = "gemini-flash-lite-latest";
 
 export interface GeminiEnv {
   GEMINI_API_KEY?: string;
@@ -23,7 +24,7 @@ export interface Personalized {
 export type GeminiResult<T> = { ok: true; value: T } | { ok: false; reason: "no-key" | "timeout" | "rate-limited" | "bad-response" | "error" };
 
 // Tried once when the main model is overloaded (HTTP 503), which happens on the free tier.
-export const BACKUP_MODEL = "gemini-flash-lite-latest";
+export const BACKUP_MODEL = "gemini-flash-latest";
 
 type Attempt = { ok: true; value: unknown } | { ok: false; reason: "timeout" | "rate-limited" | "bad-response" | "error"; overloaded?: boolean };
 
