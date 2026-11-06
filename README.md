@@ -39,7 +39,25 @@ Your draft is treated as data, not instructions, in the Gemini prompt, and repli
 - `evals/prompts.json` (82 prompts): the set I tuned the rules against. It looks great, which is why it doesn't count.
 - `evals/heldout.json` (40 prompts): written after the rules were frozen and scored once, without tuning. This is the honest number.
 
-Both sets were written by me, so they share my blind spots. Real user prompts are the next step. `npm run eval:gemini` runs the same prompts through Gemini-as-detector for comparison; it needs `GEMINI_API_KEY`.
+Both sets were written by me, so they share my blind spots. Real user prompts are the next step.
+
+### Rules vs. Gemini as the detector
+
+`npm run eval:gemini` asks Gemini (`gemini-flash-lite-latest`, which resolved to Gemini 3.5 Flash-Lite) to label the same prompts. It needs `GEMINI_KEY` or `GEMINI_API_KEY` in `.env.local`. Results from one run on 2026-11-05 are in `evals/gemini-comparison.json`.
+
+On the 40 held-out prompts (Gemini answered all 40, median about 1.2 s):
+
+| | Rules | Gemini |
+|---|---|---|
+| Mistakes | 7 | 13 |
+| Stayed quiet when it should | 14 / 17 | 10 / 17 |
+| "Vague project" false alarms | 3 | 9 |
+| Missed "ask for sources" / "show an example" | 1 / 1 | 2 / 3 |
+| Missed "fix it" | 1 | 0 |
+
+Gemini over-flags "vague project", for example on "what should I name my startup" and "help me pick between two job offers". Some of its other "mistakes" are arguable labels of mine, like whether "code a calculator" needs a tip. I left the labels as written instead of relabeling after seeing the results. The Gemini classifier prompt was not tuned at all, so this compares tuned rules with an untuned model, not the best Gemini could do.
+
+What it changed: the rules stay in charge of *when* Wisp speaks, which is also free, instant and works offline. Gemini is used only to reword a tip that already fired. The dev-set comparison is in the JSON too, but the rules were tuned on that set, so it isn't a fair contest.
 
 ## Project layout
 

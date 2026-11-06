@@ -5,6 +5,7 @@ import type { CoachContext } from "../core/types";
 import { WispUI } from "../ui/wisp-ui";
 import { WispController } from "../ui/controller";
 import results from "../../evals/results.json";
+import geminiComparison from "../../evals/gemini-comparison.json";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const draftEl = $<HTMLTextAreaElement>("#draft");
@@ -237,3 +238,8 @@ $("#eval-body").innerHTML = heldout.perDetector
   .map((d) => `<tr><td>${d.id}</td><td>${pct(d.precision)}</td><td>${pct(d.recall)}</td></tr>`)
   .join("");
 $("#eval-quiet").textContent = `Stayed quiet when it should have: ${heldout.quiet.correct} of ${heldout.quiet.total} held-out prompts.`;
+
+// Gemini-as-detector on the same held-out prompts.
+const gh = geminiComparison.heldout;
+$("#eval-gemini").textContent =
+  `Could Gemini spot these habits instead of rules? On the same ${gh.scoredOn} held-out prompts, Gemini made ${gh.gemini.mistakes.length} mistakes to the rules' ${gh.rules.mistakes.length} and stayed quiet correctly ${gh.gemini.quiet.correct} of ${gh.gemini.quiet.total} times. It mostly over-flagged "vague project". So the rules decide when Wisp speaks, and Gemini only rewords the tip.`;

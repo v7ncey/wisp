@@ -1,0 +1,519 @@
+{
+  "method": "gemini-vs-rules",
+  "model": "gemini-flash-lite-latest",
+  "runAt": "2026-11-05T21:45:56.890Z",
+  "dev": {
+    "scoredOn": 82,
+    "of": 82,
+    "gemini": {
+      "perDetector": [
+        {
+          "id": "vague-fix",
+          "truePos": 8,
+          "falsePos": 1,
+          "falseNeg": 0,
+          "precision": 0.8888888888888888,
+          "recall": 1
+        },
+        {
+          "id": "paste-no-ask",
+          "truePos": 4,
+          "falsePos": 1,
+          "falseNeg": 0,
+          "precision": 0.8,
+          "recall": 1
+        },
+        {
+          "id": "vague-build",
+          "truePos": 11,
+          "falsePos": 12,
+          "falseNeg": 0,
+          "precision": 0.4782608695652174,
+          "recall": 1
+        },
+        {
+          "id": "facts-no-sources",
+          "truePos": 9,
+          "falsePos": 1,
+          "falseNeg": 1,
+          "precision": 0.9,
+          "recall": 0.9
+        },
+        {
+          "id": "no-example",
+          "truePos": 7,
+          "falsePos": 2,
+          "falseNeg": 2,
+          "precision": 0.7777777777777778,
+          "recall": 0.7777777777777778
+        }
+      ],
+      "mistakes": [
+        {
+          "text": "The button doesn't work on mobile. It shows a blank page instead of the form.",
+          "expected": [],
+          "got": [
+            "vague-fix"
+          ]
+        },
+        {
+          "text": "what does research say about sleep and grades",
+          "expected": [],
+          "got": [
+            "facts-no-sources"
+          ]
+        },
+        {
+          "text": "how many cups are in a quart",
+          "expected": [
+            "facts-no-sources"
+          ],
+          "got": []
+        },
+        {
+          "text": "help me study for my statistics exam",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "write a cover letter for a marketing internship",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build",
+            "no-example"
+          ]
+        },
+        {
+          "text": "write a bio for my portfolio",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build",
+            "no-example"
+          ]
+        },
+        {
+          "text": "create a tagline for my coffee shop",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "write a funny caption for my dog photo",
+          "expected": [],
+          "got": [
+            "no-example"
+          ]
+        },
+        {
+          "text": "summarize this email for me",
+          "expected": [],
+          "got": [
+            "paste-no-ask"
+          ]
+        },
+        {
+          "text": "what's a good name for a golden retriever",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "give me 5 ideas for a team bonding activity under $50",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "quiz me on the French Revolution",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "rewrite this paragraph to sound more confident: I think maybe I could be a good fit.",
+          "expected": [],
+          "got": [
+            "no-example"
+          ]
+        },
+        {
+          "text": "plan a 3-day trip to Boston for two college students on a budget",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "make a study schedule for my finals next week: calc, chem, and history",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "create a workout plan for a beginner, 3 days a week",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "write me a poem",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "make a website for my resume with a contact form and a projects section that links to GitH",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        }
+      ],
+      "total": 82,
+      "quiet": {
+        "total": 40,
+        "correct": 27
+      },
+      "unanswered": 0,
+      "medianLatencyMs": 1140
+    },
+    "rules": {
+      "perDetector": [
+        {
+          "id": "vague-fix",
+          "truePos": 8,
+          "falsePos": 0,
+          "falseNeg": 0,
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "id": "paste-no-ask",
+          "truePos": 4,
+          "falsePos": 0,
+          "falseNeg": 0,
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "id": "vague-build",
+          "truePos": 11,
+          "falsePos": 1,
+          "falseNeg": 0,
+          "precision": 0.9166666666666666,
+          "recall": 1
+        },
+        {
+          "id": "facts-no-sources",
+          "truePos": 10,
+          "falsePos": 0,
+          "falseNeg": 0,
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "id": "no-example",
+          "truePos": 9,
+          "falsePos": 0,
+          "falseNeg": 0,
+          "precision": 1,
+          "recall": 1
+        }
+      ],
+      "mistakes": [
+        {
+          "text": "write a bio for my portfolio",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build",
+            "no-example"
+          ]
+        }
+      ],
+      "total": 82,
+      "quiet": {
+        "total": 40,
+        "correct": 40
+      }
+    }
+  },
+  "heldout": {
+    "scoredOn": 40,
+    "of": 40,
+    "gemini": {
+      "perDetector": [
+        {
+          "id": "vague-fix",
+          "truePos": 4,
+          "falsePos": 1,
+          "falseNeg": 0,
+          "precision": 0.8,
+          "recall": 1
+        },
+        {
+          "id": "paste-no-ask",
+          "truePos": 2,
+          "falsePos": 0,
+          "falseNeg": 0,
+          "precision": 1,
+          "recall": 1
+        },
+        {
+          "id": "vague-build",
+          "truePos": 5,
+          "falsePos": 9,
+          "falseNeg": 0,
+          "precision": 0.35714285714285715,
+          "recall": 1
+        },
+        {
+          "id": "facts-no-sources",
+          "truePos": 4,
+          "falsePos": 0,
+          "falseNeg": 2,
+          "precision": 1,
+          "recall": 0.6666666666666666
+        },
+        {
+          "id": "no-example",
+          "truePos": 3,
+          "falsePos": 1,
+          "falseNeg": 3,
+          "precision": 0.75,
+          "recall": 0.5
+        }
+      ],
+      "mistakes": [
+        {
+          "text": "i need a program that does my taxes",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "code a calculator",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "whats the best way to build a website as a beginner",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "why is my wifi not working",
+          "expected": [],
+          "got": [
+            "vague-fix"
+          ]
+        },
+        {
+          "text": "what year did the berlin wall fall",
+          "expected": [
+            "facts-no-sources"
+          ],
+          "got": []
+        },
+        {
+          "text": "how many tablespoons in a cup",
+          "expected": [
+            "facts-no-sources"
+          ],
+          "got": []
+        },
+        {
+          "text": "draft a speech for graduation",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "write a product description for handmade candles",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "write a professional bio, 3 sentences, third person",
+          "expected": [],
+          "got": [
+            "no-example"
+          ]
+        },
+        {
+          "text": "make a newsletter for our neighborhood association",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "write a short story about a dragon",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build",
+            "no-example"
+          ]
+        },
+        {
+          "text": "help me pick between two job offers, one pays more but the other has better mentorship",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "what should I name my startup",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        }
+      ],
+      "total": 40,
+      "quiet": {
+        "total": 17,
+        "correct": 10
+      },
+      "unanswered": 0,
+      "medianLatencyMs": 1194
+    },
+    "rules": {
+      "perDetector": [
+        {
+          "id": "vague-fix",
+          "truePos": 3,
+          "falsePos": 0,
+          "falseNeg": 1,
+          "precision": 1,
+          "recall": 0.75
+        },
+        {
+          "id": "paste-no-ask",
+          "truePos": 2,
+          "falsePos": 1,
+          "falseNeg": 0,
+          "precision": 0.6666666666666666,
+          "recall": 1
+        },
+        {
+          "id": "vague-build",
+          "truePos": 5,
+          "falsePos": 3,
+          "falseNeg": 0,
+          "precision": 0.625,
+          "recall": 1
+        },
+        {
+          "id": "facts-no-sources",
+          "truePos": 5,
+          "falsePos": 0,
+          "falseNeg": 1,
+          "precision": 1,
+          "recall": 0.8333333333333334
+        },
+        {
+          "id": "no-example",
+          "truePos": 5,
+          "falsePos": 0,
+          "falseNeg": 1,
+          "precision": 1,
+          "recall": 0.8333333333333334
+        }
+      ],
+      "mistakes": [
+        {
+          "text": "i need a program that does my taxes",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "whats the best way to build a website as a beginner",
+          "expected": [],
+          "got": [
+            "vague-build"
+          ]
+        },
+        {
+          "text": "wrong answer",
+          "expected": [
+            "vague-fix"
+          ],
+          "got": []
+        },
+        {
+          "text": "what % of americans own a pet",
+          "expected": [
+            "facts-no-sources"
+          ],
+          "got": []
+        },
+        {
+          "text": "write a tiktok script about study tips",
+          "expected": [
+            "no-example"
+          ],
+          "got": [
+            "vague-build",
+            "no-example"
+          ]
+        },
+        {
+          "text": "write a short story about a dragon",
+          "expected": [
+            "no-example"
+          ],
+          "got": []
+        },
+        {
+          "text": "Turn these meeting notes into a list of action items with owners:\n\nMeeting notes 10/14: Di",
+          "expected": [],
+          "got": [
+            "paste-no-ask"
+          ]
+        }
+      ],
+      "total": 40,
+      "quiet": {
+        "total": 17,
+        "correct": 14
+      }
+    }
+  }
+}
