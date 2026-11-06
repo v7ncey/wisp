@@ -4,7 +4,7 @@ import { requestPersonalized } from "../core/personalize-client";
 import type { CoachContext, Suggestion } from "../core/types";
 import { WispUI } from "../ui/wisp-ui";
 import { WispController } from "../ui/controller";
-import { adapterFor } from "./sites";
+import { adapterFor, editorText, isSameChat } from "./sites";
 import { API_URL, DEFAULT_SETTINGS, SETTINGS_KEY, type Settings } from "./config";
 
 const adapter = adapterFor(location.hostname);
@@ -18,11 +18,13 @@ async function start() {
   document.documentElement.append(host);
   const ui = new WispUI(host, { mode: "fixed" });
 
-  const pageLoadId = `new-${Date.now()}`;
-  const chatId = () => a.chatId(location.pathname) ?? pageLoadId;
+  // A new chat has no id until its first message is sent; it keeps this one until then.
+  let unsavedChatId = `new-${Date.now()}`;
+  const urlChatId = () => a.chatId(location.pathname);
+  const chatId = () => urlChatId() ?? unsavedChatId;
   const userMessages = () => document.querySelectorAll(a.userMessageSelector).length;
   const editorEl = () => document.querySelector<HTMLElement>(a.editorSelector);
-  const readDraft = () => (editorEl()?.innerText ?? "").replace(/ /g, " ").trim();
+  const readDraft = () => editorText(editorEl());
 
   const context = (): CoachContext => ({ site: a.site, chatId: chatId(), userMessageCount: userMessages(), now: Date.now() });
 
@@ -67,14 +69,21 @@ async function start() {
   // Sending: a new user message appears and the editor empties. Checking both avoids
   // counting old messages that load in when you open an existing chat.
   let knownCount = userMessages();
-  let knownChat = chatId();
+  let knownUrlId = urlChatId();
   const observer = new MutationObserver(() => {
-    if (chatId() !== knownChat) {
-      knownChat = chatId();
-      knownCount = userMessages();
-      lastDraft = "";
-      ui.hide();
-      return;
+    const urlId = urlChatId();
+    if (urlId !== knownUrlId) {
+      const sameChat = isSameChat(knownUrlId, urlId);
+      knownUrlId = urlId;
+      if (!sameChat) {
+        // Moved to a different chat: forget the draft and the message count.
+        if (urlId === null) unsavedChatId = `new-${Date.now()}`;
+        knownCount = userMessages();
+        lastDraft = "";
+        ui.hide();
+        return;
+      }
+      // A new chat just got its id because its first message was sent: keep going.
     }
     const count = userMessages();
     if (count > knownCount) {
@@ -89,28 +98,37 @@ async function start() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-/** Appends text to a contenteditable editor (ProseMirror) the way a user would type it. */
+/** Appends text to the editor the way a user would type it: a <textarea> or a contenteditable (ProseMirror) div. */
 function insertIntoEditor(el: HTMLElement | null, text: string): boolean {
   if (!el) return false;
   el.focus();
-  const sel = window.getSelection();
-  if (sel) {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
+  if (el instanceof HTMLTextAreaElement) {
+    el.setSelectionRange(el.value.length, el.value.length);
+  } else {
+    const sel = window.getSelection();
+    if (sel) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
   }
-  const current = el.innerText.trim();
+  const current = editorText(el);
   const toInsert = current ? `${/[.!?:]$/.test(current) ? "" : "."} ${text}` : text;
-  // execCommand is deprecated but is still what rich-text editors listen for as real typing.
-  let ok = document.execCommand("insertText", false, toInsert);
-  if (!ok || !el.innerText.includes(text.trim().slice(0, 20))) {
-    // Fallback: a synthetic paste, which ProseMirror-based editors handle.
-    const dt = new DataTransfer();
-    dt.setData("text/plain", toInsert);
-    el.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true }));
-    ok = el.innerText.includes(text.trim().slice(0, 20));
+  const landed = () => editorText(el).includes(text.trim().slice(0, 20));
+  // execCommand is deprecated but is still what these editors (and React) treat as real typing.
+  if (document.execCommand("insertText", false, toInsert) && landed()) return true;
+  if (el instanceof HTMLTextAreaElement) {
+    // Fallback for a React-controlled textarea: set the value natively, then announce it.
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
+    setter?.call(el, el.value + toInsert);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    return landed();
   }
-  return ok;
+  // Fallback for ProseMirror: a synthetic paste.
+  const dt = new DataTransfer();
+  dt.setData("text/plain", toInsert);
+  el.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true }));
+  return landed();
 }
