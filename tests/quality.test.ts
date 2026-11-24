@@ -114,3 +114,32 @@ describe("judge replies", () => {
     expect((await judge("g", "a", "b", env, geminiText(JSON.stringify({ a: s, b: s, preferred: "C" })))).ok).toBe(false);
   });
 });
+
+describe("judge configuration", () => {
+  const s = { fit: 3, assumptions: 3, actionability: 3, trust: 3 };
+  const capture = () => {
+    const sent: Array<{ url: string; body: { generationConfig: Record<string, unknown> } }> = [];
+    const f = (async (url: string, init: RequestInit) => {
+      sent.push({ url, body: JSON.parse(String(init.body)) });
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ a: s, b: s, preferred: "tie" }) }] } }] }));
+    }) as unknown as Fetch;
+    return { sent, f };
+  };
+
+  it("defaults to Flash-Lite with high thinking, and records it", async () => {
+    const { sent, f } = capture();
+    const r = await judge("g", "a", "b", { GEMINI_API_KEY: "k" }, f);
+    expect(sent[0].url.includes("/models/gemini-flash-lite-latest:")).toBe(true);
+    expect(sent[0].body.generationConfig.thinkingConfig).toEqual({ thinkingLevel: "high" });
+    expect(r.ok && r.value.model).toBe("gemini-flash-lite-latest (thinking high)");
+  });
+
+  it("only lets the eval pick judge models from the allowlist", async () => {
+    const { sent, f } = capture();
+    await judge("g", "a", "b", { GEMINI_API_KEY: "k" }, f, { model: "some-expensive-model" });
+    expect(sent[0].url.includes("/models/gemini-flash-lite-latest:")).toBe(true);
+    await judge("g", "a", "b", { GEMINI_API_KEY: "k" }, f, { model: "gemini-flash-latest", thinking: "low" });
+    expect(sent[1].url.includes("/models/gemini-flash-latest:")).toBe(true);
+    expect(sent[1].body.generationConfig.thinkingConfig).toEqual({ thinkingLevel: "low" });
+  });
+});

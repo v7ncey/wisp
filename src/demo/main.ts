@@ -4,6 +4,8 @@ import { requestPersonalized } from "../core/personalize-client";
 import type { CoachContext } from "../core/types";
 import { WispUI } from "../ui/wisp-ui";
 import { WispController } from "../ui/controller";
+import { selectFirstBlank } from "../ui/blanks";
+import { appendAddOn } from "../core/apply";
 import results from "../../evals/results.json";
 import geminiComparison from "../../evals/gemini-comparison.json";
 
@@ -32,10 +34,10 @@ const controller = new WispController({
   editor: {
     getDraft: () => draftEl.value,
     insert(text) {
-      const v = draftEl.value.trimEnd();
-      draftEl.value = v ? `${v}${/[.!?:]$/.test(v) ? "" : "."} ${text}` : text;
+      draftEl.value = appendAddOn(draftEl.value, text);
       draftEl.focus();
-      draftEl.setSelectionRange(draftEl.value.length, draftEl.value.length);
+      // Land on the first blank, if the add-on has one, so typing replaces it.
+      if (!selectFirstBlank(draftEl)) draftEl.setSelectionRange(draftEl.value.length, draftEl.value.length);
       return true;
     },
   },

@@ -224,7 +224,8 @@ export class WispUI {
         const { chip, ai } = chips[Number(btn.dataset.i)];
         h.onChip(chip, ai);
         btn.disabled = true;
-        btn.innerHTML = `✓ Added`;
+        // Add-ons with blanks only help once the blank is filled, so say what to do next.
+        btn.textContent = chip.insert.includes("___") ? "✓ Added: type over the ___" : chip.fill?.length ? "✓ Added: finish the sentence" : "✓ Added";
       }),
     );
   }

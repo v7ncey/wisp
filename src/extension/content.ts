@@ -5,6 +5,7 @@ import type { CoachContext, Suggestion } from "../core/types";
 import { WispUI } from "../ui/wisp-ui";
 import { WispController } from "../ui/controller";
 import { adapterFor, editorText, isSameChat } from "./sites";
+import { selectFirstBlank } from "../ui/blanks";
 import { API_URL, DEFAULT_SETTINGS, SETTINGS_KEY, type Settings } from "./config";
 
 const adapter = adapterFor(location.hostname);
@@ -37,7 +38,15 @@ async function start() {
     coach,
     ui,
     context,
-    editor: { getDraft: readDraft, insert: (text) => insertIntoEditor(editorEl(), text) },
+    editor: {
+      getDraft: readDraft,
+      insert: (text) => {
+        const el = editorEl();
+        if (!insertIntoEditor(el, text)) return false;
+        selectFirstBlank(el); // land on a "___" blank, if any, so typing replaces it
+        return true;
+      },
+    },
     personalize: settings.personalize ? personalize : undefined,
   });
 

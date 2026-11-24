@@ -3,6 +3,7 @@ import type { PersonalizeOutcome } from "../core/personalize-client";
 import type { CoachContext, Suggestion } from "../core/types";
 import { TIPS } from "../core/library";
 import type { WispUI } from "./wisp-ui";
+import { hasBlank } from "./blanks";
 
 export interface Editor {
   getDraft(): string;
@@ -26,6 +27,9 @@ export class WispController {
   private timer: number | undefined;
   private forceNext = false;
   private pauseMs: number;
+  /** An add-on with a "___" blank went into this draft; remind once if it's still unfilled. */
+  private blankInserted = false;
+  private blankReminded = false;
 
   constructor(private d: ControllerDeps) {
     this.pauseMs = d.pauseMs ?? 1500;
@@ -53,6 +57,11 @@ export class WispController {
   async look() {
     const draft = this.d.editor.getDraft();
     if (!draft.trim() || this.d.ui.isOpen) return;
+    if (this.blankInserted && !this.blankReminded && hasBlank(draft)) {
+      this.blankReminded = true;
+      this.d.ui.toast("Type your details over the ___ before you send, so the AI gets the real thing.", 5000);
+      return;
+    }
     const force = this.forceNext;
     this.forceNext = false;
     const s = await this.d.coach.check(draft, this.d.context(), { force });
@@ -60,7 +69,10 @@ export class WispController {
 
     const handlers = {
       onChip: (chip: { insert: string }, _ai: boolean) => {
-        if (this.d.editor.insert(chip.insert)) void this.d.coach.chipClicked(s.tipId);
+        if (this.d.editor.insert(chip.insert)) {
+          if (hasBlank(chip.insert)) this.blankInserted = true;
+          void this.d.coach.chipClicked(s.tipId);
+        }
       },
       onDismiss: () => void this.d.coach.dismissed(s.tipId),
       onMute: () => void this.d.coach.mute(s.tipId),
@@ -77,6 +89,8 @@ export class WispController {
   /** Call when the user sends a message. */
   async onSend(text: string) {
     clearTimeout(this.timer);
+    this.blankInserted = false;
+    this.blankReminded = false;
     this.d.ui.glance(false);
     if (this.d.ui.currentTip) this.d.ui.hide();
     const { learned } = await this.d.coach.recordSend(text, this.d.context());

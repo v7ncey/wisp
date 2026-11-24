@@ -40,3 +40,11 @@ export function applyChips(draft: string, chips: Chip[], details: Details): stri
   }
   return out;
 }
+
+export const BLANK = "___";
+
+/** Where the first unfilled blank is in a draft, so the editor can select it for the user to type over. */
+export function firstBlank(text: string, from = 0): { start: number; end: number } | null {
+  const start = text.indexOf(BLANK, from);
+  return start === -1 ? null : { start, end: start + BLANK.length };
+}

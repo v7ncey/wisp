@@ -46,7 +46,12 @@ export interface CallOptions {
   timeoutMs?: number;
   /** Try BACKUP_MODEL once when the model is overloaded. Default true; evals turn it off to keep one model. */
   backup?: boolean;
+  /** Gemini 3 thinking level. Omit for the model's default. */
+  thinking?: ThinkingLevel;
 }
+
+export const THINKING_LEVELS = ["minimal", "low", "medium", "high"] as const;
+export type ThinkingLevel = (typeof THINKING_LEVELS)[number];
 
 async function callModel(model: string, key: string, opts: CallOptions, signal: AbortSignal, fetchImpl: Fetch): Promise<Attempt> {
   const json = opts.json ?? true;
@@ -61,6 +66,7 @@ async function callModel(model: string, key: string, opts: CallOptions, signal: 
         ...(json ? { responseMimeType: "application/json" } : {}),
         temperature: opts.temperature ?? 0.3,
         maxOutputTokens: opts.maxOutputTokens ?? 400,
+        ...(opts.thinking ? { thinkingConfig: { thinkingLevel: opts.thinking } } : {}),
       },
     }),
   });
@@ -105,7 +111,7 @@ export async function generate(env: GeminiEnv, opts: CallOptions, fetchImpl: Fet
     }
     return result.ok ? result : { ok: false, reason: result.reason };
   } catch (e) {
-    if ((e as Error).name !== "AbortError") console.warn(`Gemini call failed: ${(e as Error).message}`);
+    console.warn(`Gemini ${model} call failed: ${(e as Error).name === "AbortError" ? `timed out after ${opts.timeoutMs ?? TIMEOUT_MS} ms` : (e as Error).message}`);
     return { ok: false, reason: (e as Error).name === "AbortError" ? "timeout" : "error" };
   } finally {
     clearTimeout(timer);

@@ -1,4 +1,4 @@
-import { generate, type Fetch, type GeminiEnv, type GeminiResult, type Turn } from "./gemini.js";
+import { generate, type Fetch, type GeminiEnv, type GeminiResult, type ThinkingLevel, type Turn } from "./gemini.js";
 
 /**
  * The coaching-quality eval asks: if someone follows Wisp's tip, does the AI's reply get
@@ -8,8 +8,20 @@ import { generate, type Fetch, type GeminiEnv, type GeminiResult, type Turn } fr
 
 /** Stands in for ChatGPT or Claude. The same model Wisp already uses, so the run is cheap. */
 export const ANSWER_MODEL = "gemini-flash-lite-latest";
-/** A stronger model than the one that wrote the replies, to judge them. */
-export const JUDGE_MODEL = "gemini-flash-latest";
+/**
+ * The judge. Gemini Flash was the plan, but on 2026-11-24 it was overloaded (503s and 55 s
+ * timeouts) and Pro has no free-tier quota, so the judge is Flash-Lite with thinking turned up,
+ * unlike the assistant, which answers with no thinking. Override with --judge-model/--judge-thinking.
+ */
+export const JUDGE_MODEL = "gemini-flash-lite-latest";
+export const JUDGE_THINKING: ThinkingLevel = "high";
+/** Models the eval may pick for the judge (token-protected endpoint only). */
+export const JUDGE_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-pro-latest"];
+
+export interface JudgeConfig {
+  model?: string;
+  thinking?: ThinkingLevel;
+}
 
 const MAX_REPLY_CHARS = 8000;
 const MAX_INPUT_CHARS = 12000;
@@ -82,7 +94,9 @@ function parseScores(v: unknown): Scores | null {
   return out;
 }
 
-export async function judge(goal: string, replyA: string, replyB: string, env: GeminiEnv, fetchImpl: Fetch = fetch): Promise<GeminiResult<Judgement>> {
+export async function judge(goal: string, replyA: string, replyB: string, env: GeminiEnv, fetchImpl: Fetch = fetch, cfg: JudgeConfig = {}): Promise<GeminiResult<Judgement>> {
+  const model = cfg.model && JUDGE_MODELS.includes(cfg.model) ? cfg.model : JUDGE_MODEL;
+  const thinking = cfg.thinking ?? (model === JUDGE_MODEL ? JUDGE_THINKING : undefined);
   const user = [
     `<what_the_person_wanted>\n${goal.slice(0, 2000)}\n</what_the_person_wanted>`,
     `<reply_a>\n${replyA.slice(0, MAX_REPLY_CHARS)}\n</reply_a>`,
@@ -90,7 +104,7 @@ export async function judge(goal: string, replyA: string, replyB: string, env: G
   ].join("\n\n");
   const r = await generate(
     env,
-    { model: JUDGE_MODEL, system: JUDGE_SYSTEM, turns: [{ role: "user", text: user }], json: true, temperature: 0, maxOutputTokens: 4000, timeoutMs: 55_000, backup: false },
+    { model, system: JUDGE_SYSTEM, turns: [{ role: "user", text: user }], json: true, temperature: 0, maxOutputTokens: 4000, timeoutMs: 55_000, backup: false, thinking },
     fetchImpl,
   );
   if (!r.ok) return r;
@@ -99,7 +113,7 @@ export async function judge(goal: string, replyA: string, replyB: string, env: G
   const b = parseScores(v.b);
   const preferred = v.preferred === "A" || v.preferred === "B" || v.preferred === "tie" ? v.preferred : null;
   if (!a || !b || !preferred) return { ok: false, reason: "bad-response" };
-  return { ok: true, value: { a, b, preferred, reason: typeof v.reason === "string" ? v.reason.slice(0, 400) : "", model: JUDGE_MODEL } };
+  return { ok: true, value: { a, b, preferred, reason: typeof v.reason === "string" ? v.reason.slice(0, 400) : "", model: `${model}${thinking ? ` (thinking ${thinking})` : ""}` } };
 }
 
 /**

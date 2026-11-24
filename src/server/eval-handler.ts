@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import type { Fetch, GeminiEnv, Turn } from "./gemini.js";
+import { THINKING_LEVELS, type Fetch, type GeminiEnv, type ThinkingLevel, type Turn } from "./gemini.js";
 import { answer, judge, simulateUser } from "./quality.js";
 
 /**
@@ -8,7 +8,7 @@ import { answer, judge, simulateUser } from "./quality.js";
  * it can't be used as a free Gemini proxy. The public coach endpoint is unaffected.
  *
  * { task: "answer", prompt, history? }  -> { ok: true, value: { text, model } }
- * { task: "judge", goal, a, b }         -> { ok: true, value: Judgement }
+ * { task: "judge", goal, a, b, model?, thinking? } -> { ok: true, value: Judgement }
  * { task: "user", goal, conversation }  -> { ok: true, value: { text, model } }  (the simulated person's next message)
  * Gemini failures come back as { ok: false, reason } with status 200 so the script can retry.
  */
@@ -64,7 +64,9 @@ export async function handleEval(req: Request, env: EvalEnv, fetchImpl: Fetch = 
     const a = text(body.a);
     const b = text(body.b);
     if (!goal || !a || !b) return json({ error: "Bad judge request" }, 400);
-    return json(await judge(goal, a, b, env, fetchImpl));
+    const thinking = THINKING_LEVELS.includes(body.thinking as ThinkingLevel) ? (body.thinking as ThinkingLevel) : undefined;
+    const model = typeof body.model === "string" ? body.model : undefined;
+    return json(await judge(goal, a, b, env, fetchImpl, { model, thinking }));
   }
   if (body.task === "user") {
     const goal = text(body.goal);

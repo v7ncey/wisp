@@ -26,8 +26,8 @@ import { detectDraft } from "../src/core/detectors";
 import { applyChips, type Details } from "../src/core/apply";
 import { TIPS } from "../src/core/library";
 import type { TipId } from "../src/core/types";
-import type { GeminiResult, Turn } from "../src/server/gemini";
-import { ANSWER_MODEL, CRITERIA, JUDGE_MODEL, JUDGE_SYSTEM, USER_SIM_SYSTEM, answer, judge, simulateUser, type Answer, type Judgement, type Scores } from "../src/server/quality";
+import type { GeminiResult, ThinkingLevel, Turn } from "../src/server/gemini";
+import { ANSWER_MODEL, CRITERIA, JUDGE_MODEL, JUDGE_THINKING, JUDGE_SYSTEM, USER_SIM_SYSTEM, answer, judge, simulateUser, type Answer, type Judgement, type Scores } from "../src/server/quality";
 
 export interface QualityCase {
   id: string;
@@ -45,6 +45,8 @@ interface Arm {
   prompt: string;
   turns: Turn[];
   final: string;
+  /** Model versions Gemini reported for the replies (and simulated person) on this side. */
+  models: string[];
 }
 
 interface Backend {
@@ -53,16 +55,21 @@ interface Backend {
   judge(goal: string, a: string, b: string): Promise<GeminiResult<Judgement>>;
 }
 
-function directBackend(key: string): Backend {
+interface JudgeChoice {
+  model?: string;
+  thinking?: ThinkingLevel;
+}
+
+function directBackend(key: string, j: JudgeChoice): Backend {
   const env = { GEMINI_API_KEY: key };
   return {
     answer: (p, h) => answer(p, h, env),
     user: (g, c) => simulateUser(g, c, env),
-    judge: (g, a, b) => judge(g, a, b, env),
+    judge: (g, a, b) => judge(g, a, b, env, fetch, j),
   };
 }
 
-function remoteBackend(base: string, token: string): Backend {
+function remoteBackend(base: string, token: string, j: JudgeChoice): Backend {
   const call = async <T>(body: unknown): Promise<GeminiResult<T>> => {
     try {
       const res = await fetch(`${base.replace(/\/$/, "")}/api/eval`, {
@@ -82,7 +89,7 @@ function remoteBackend(base: string, token: string): Backend {
   return {
     answer: (prompt, history) => call({ task: "answer", prompt, history }),
     user: (goal, conversation) => call({ task: "user", goal, conversation }),
-    judge: (goal, a, b) => call({ task: "judge", goal, a, b }),
+    judge: (goal, a, b) => call({ task: "judge", goal, a, b, ...j }),
   };
 }
 
@@ -128,6 +135,8 @@ async function main() {
       label: { type: "string", default: "baseline" },
       reuse: { type: "string" },
       only: { type: "string" },
+      "judge-model": { type: "string" },
+      "judge-thinking": { type: "string" },
     },
   });
   const set = values.set!;
@@ -138,7 +147,8 @@ async function main() {
   const key = process.env.GEMINI_API_KEY ?? process.env.GEMINI_KEY;
   const url = process.env.WISP_EVAL_URL;
   const token = process.env.WISP_EVAL_TOKEN;
-  const backend = key ? directBackend(key) : url && token ? remoteBackend(url, token) : null;
+  const judgeChoice: JudgeChoice = { model: values["judge-model"], thinking: values["judge-thinking"] as ThinkingLevel | undefined };
+  const backend = key ? directBackend(key, judgeChoice) : url && token ? remoteBackend(url, token, judgeChoice) : null;
   if (!backend) {
     console.log("Set GEMINI_API_KEY (direct), or WISP_EVAL_URL and WISP_EVAL_TOKEN (through the deployed /api/eval). Nothing was run.");
     process.exit(0);
@@ -169,11 +179,11 @@ async function main() {
     const history = c.history ?? [];
     const first = await step(`${c.id} answer`, () => backend!.answer(prompt, history));
     const turns: Turn[] = [{ role: "user", text: prompt }, { role: "model", text: first.text }];
-    if (!TWO_TURN_TIPS.includes(c.tip)) return { prompt, turns, final: first.text };
+    if (!TWO_TURN_TIPS.includes(c.tip)) return { prompt, turns, final: first.text, models: [first.model] };
     const reply = await step(`${c.id} person`, () => backend!.user(c.goal, [...history, ...turns]));
     const second = await step(`${c.id} answer 2`, () => backend!.answer(reply.text, [...history, ...turns]));
     turns.push({ role: "user", text: reply.text }, { role: "model", text: second.text });
-    return { prompt, turns, final: second.text };
+    return { prompt, turns, final: second.text, models: [...new Set([first.model, reply.model, second.model])] };
   }
 
   const results: CaseResult[] = [];
@@ -234,7 +244,12 @@ async function main() {
     runAt: new Date().toISOString(),
     command: `npm run eval:quality -- ${process.argv.slice(2).join(" ")}`.trim(),
     backend: key ? "direct" : "deployed /api/eval",
-    models: { assistant: ANSWER_MODEL, simulatedPerson: ANSWER_MODEL, judge: JUDGE_MODEL },
+    models: {
+      assistant: `${ANSWER_MODEL} (no thinking)`,
+      simulatedPerson: `${ANSWER_MODEL} (no thinking)`,
+      judge: results[0]?.judgements[0]?.model ?? `${judgeChoice.model ?? JUDGE_MODEL} (thinking ${judgeChoice.thinking ?? JUDGE_THINKING})`,
+      resolvedVersions: [...new Set(results.flatMap((r) => [...r.original.models, ...r.withTip.models]))],
+    },
     twoTurnTips: TWO_TURN_TIPS,
     rubric: JUDGE_SYSTEM,
     simulatedPersonInstructions: USER_SIM_SYSTEM,
