@@ -91,6 +91,25 @@ Caveats, read before quoting any of this:
 
 Re-run it: put `GEMINI_API_KEY` in `.env.local` and run `npm run eval:quality -- --set heldout --label baseline`. To reuse the "as typed" replies from an earlier run, add `--reuse evals/quality/heldout-baseline.json`. Use `--judge-model gemini-flash-latest` once Flash isn't overloaded. One full held-out run is about 75 model calls. Without a key, the script can call the deployed `/api/eval` instead, which is closed unless the server has `WISP_EVAL_TOKEN` set and the caller sends it.
 
+## First visit and accessibility (demo page)
+
+`npm run eval:ux -- --label <name>` builds the demo, serves it locally and measures it in headless Chromium: Lighthouse (mobile and desktop), axe-core WCAG A/AA checks (light and dark mode; page as loaded, with a tip open, with the stats panel open), time to the first tip, a keyboard-only task, and phone layout. Add `--url https://wisp-coach.vercel.app` to measure the live site. The changes came from a heuristic review (`docs/research/2026-11-ux-review.md`); there was no user testing.
+
+| Check (2026-11-24) | Before (`evals/ux/baseline.json`) | After (`evals/ux/after.json`) |
+|---|---|---|
+| Lighthouse mobile: performance / accessibility / best practices / SEO | 100 / 96 / 100 / 100 | 100 / 100 / 100 / 100 |
+| Lighthouse desktop | 94 / 96 / 100 / 100 | 100 / 100 / 100 / 100 |
+| Elements failing axe (light / dark) | 11 / 1 | 0 / 0 |
+| Desktop layout shift (CLS) | 0.148 | 0.013 |
+| Phone (390x844): message box on the first screen | no (starts at y=898) | yes |
+| Phone with keyboard up (390x450): tip fully visible | no (top at -95 px) | yes |
+| A clear prompt gets any response | no, silence | "Looks clear to me..." |
+| Escape closes the tip | no | yes |
+| Time from the last keystroke to the open tip | 2.3 s | 2.3 s (the pause and peek are on purpose) |
+| Keyboard only: Tabs to the message box / to the add-on | 4 / 3 | 5 / 3 (the new "Show me" button comes first) |
+
+The live site after deploying (`evals/ux/prod.json`) matches the "after" column. Lighthouse performance and layout shift vary a little between runs. On the same unchanged code, desktop performance read 100 in one baseline run and 94 in another. In the extension, Wisp still stays silent when no tip applies; the "looks clear" note is demo-only.
+
 ## Project layout
 
 ```
@@ -111,6 +130,8 @@ npm install
 npm test          # unit tests (Node's built-in runner)
 npm run eval      # detector precision/recall
 npm run eval:quality -- --set heldout --label baseline   # do the tips improve answers? (needs a Gemini key)
+npm run eval:extension -- --label check   # extension on 15 page layouts
+npm run eval:ux -- --label check          # Lighthouse, accessibility, first-run checks
 npm run build     # bundles demo + extension, zips the extension into public/
 npx tsx scripts/serve.ts   # local demo on http://localhost:5178
 ```

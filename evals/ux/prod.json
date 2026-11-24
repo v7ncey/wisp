@@ -1,0 +1,100 @@
+{
+  "label": "prod",
+  "date": "2026-11-24T07:38:31.974Z",
+  "command": "npm run eval:ux -- --label prod --url https://wisp-coach.vercel.app",
+  "target": "https://wisp-coach.vercel.app",
+  "commit": "1cda524",
+  "uncommittedChanges": "no",
+  "lighthouse": {
+    "mobile": {
+      "performance": 100,
+      "accessibility": 100,
+      "bestPractices": 100,
+      "seo": 100,
+      "failedAccessibilityAudits": [],
+      "lcpMs": 1140,
+      "cls": 0
+    },
+    "desktop": {
+      "performance": 100,
+      "accessibility": 100,
+      "bestPractices": 100,
+      "seo": 100,
+      "failedAccessibilityAudits": [],
+      "lcpMs": 327,
+      "cls": 0.013
+    }
+  },
+  "axe": {
+    "light": {
+      "loaded": [],
+      "tipOpen": [],
+      "statsPanel": []
+    },
+    "dark": {
+      "loaded": [],
+      "tipOpen": [],
+      "statsPanel": []
+    },
+    "failingElements": {
+      "light": {
+        "loaded": 0,
+        "tipOpen": 0,
+        "statsPanel": 0
+      },
+      "dark": {
+        "loaded": 0,
+        "tipOpen": 0,
+        "statsPanel": 0
+      }
+    }
+  },
+  "timeToFirstTipMs": {
+    "runs": [
+      2325,
+      2329,
+      2327
+    ],
+    "median": 2327
+  },
+  "keyboardTask": {
+    "success": true,
+    "reason": null,
+    "tabsToBox": 5,
+    "tabsToAddOn": 3
+  },
+  "phoneTip": {
+    "top": 310,
+    "bottom": 551,
+    "left": 21,
+    "right": 361,
+    "vw": 390,
+    "vh": 844,
+    "scrollY": 0,
+    "insideViewport": true
+  },
+  "phoneComposer": {
+    "top": 629,
+    "bottom": 719,
+    "vh": 844,
+    "pageWidth": 390,
+    "vw": 390,
+    "onFirstScreen": true,
+    "noSidewaysScroll": true
+  },
+  "phoneKeyboardTip": {
+    "top": 0,
+    "bottom": 222,
+    "vh": 450,
+    "fullyVisible": true
+  },
+  "clearPromptFeedback": {
+    "feedbackShown": true,
+    "text": "Looks clear to me. I only speak up when a tip would change the answer. Try a scenario to see one."
+  },
+  "screenReader": {
+    "title": "Let it ask before it builds",
+    "announced": true,
+    "escapeCloses": true
+  }
+}
