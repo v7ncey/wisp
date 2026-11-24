@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  Wisp extension fixture: chatgpt-testid-prompt-textarea (DOCUMENTED)
+  Composer identified only by data-testid=prompt-textarea (no name, no id).
+  Source: Userscript fallback chains cited in research 2026-11 section 5 [E4]: [data-testid='prompt-textarea'].
+  Simplified mock-up for scripts/eval-extension.ts; see variants.json.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ChatGPT</title>
+<style>
+  html, body { margin: 0; height: 100%; font: 15px/1.4 system-ui, sans-serif; }
+  body { display: flex; }
+  nav { width: 220px; background: #f4f4f4; padding: 12px; box-sizing: border-box; }
+  nav textarea { width: 100%; height: 28px; resize: none; }
+  main { flex: 1; display: flex; flex-direction: column; height: 100vh; }
+  #thread { flex: 1; overflow: auto; padding: 16px; }
+  #composer { display: flex; gap: 8px; padding: 16px; border-top: 1px solid #ddd; }
+  #editor-slot, #composer-frame { flex: 1; }
+  #composer-frame { height: 90px; border: 0; }
+  #editor-slot > * { display: block; width: 100%; min-height: 48px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 12px; padding: 10px; font: inherit; resize: none; }
+  #editor-slot p { margin: 0; }
+</style>
+</head>
+<body>
+<nav>
+  
+  <a href="/">New chat</a><br>
+  
+</nav>
+<main>
+  <div id="thread"></div>
+  <form id="composer"><div id="editor-slot"></div><button id="send" type="submit" aria-label="Send prompt">Send</button></form>
+</main>
+<script>window.FIXTURE = {"editor":"<textarea data-testid=\"prompt-textarea\" placeholder=\"Send a message\" rows=\"1\"></textarea>","userMsg":"<article data-testid=\"conversation-turn-2\"><div data-message-author-role=\"user\"><div class=\"whitespace-pre-wrap\">{T}</div></div></article>","botMsg":"<article data-testid=\"conversation-turn-3\"><div data-message-author-role=\"assistant\"><p>Sure. What should it do?</p></div></article>","newChatPath":"/c/","mountDelay":0,"iframe":false,"nav":null};</script>
+<script>
+(() => {
+  const C = window.FIXTURE;
+  const thread = document.getElementById("thread");
+  const slot = document.getElementById("editor-slot");
+  let ed = null;
+  let doc = document;
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+  const text = () => (ed.tagName === "TEXTAREA" ? ed.value : ed.innerText).replace(/ /g, " ").trim();
+  const clear = () => { if (ed.tagName === "TEXTAREA") ed.value = ""; else ed.innerHTML = ed.dataset.empty || ""; };
+  let chatId = location.pathname.match(/\/(?:u?c|chat)\/([\w-]+)/)?.[1] ?? null;
+  function send() {
+    const t = text();
+    if (!t) return;
+    thread.insertAdjacentHTML("beforeend", C.userMsg.replace("{T}", esc(t)));
+    clear();
+    if (!chatId) { chatId = "fx-" + Math.random().toString(36).slice(2, 10); history.pushState({}, "", C.newChatPath + chatId); }
+    setTimeout(() => thread.insertAdjacentHTML("beforeend", C.botMsg), 300);
+  }
+  function wire(root) {
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey && e.target === ed) { e.preventDefault(); send(); }
+    });
+    root.getElementById("send").addEventListener("click", (e) => { e.preventDefault(); send(); });
+  }
+  function mount(html) {
+    const host = doc.getElementById("editor-slot");
+    host.innerHTML = html;
+    ed = host.firstElementChild;
+    if (ed.tagName !== "TEXTAREA") ed.dataset.empty = ed.innerHTML;
+  }
+  function start() {
+    if (C.iframe) {
+      const f = document.createElement("iframe");
+      f.id = "composer-frame";
+      f.srcdoc = '<!doctype html><body style="margin:0"><form id="composer"><div id="editor-slot"></div><button id="send" type="submit" aria-label="Send prompt">Send</button></form></body>';
+      f.addEventListener("load", () => { doc = f.contentDocument; mount(C.editor); wire(doc); });
+      slot.replaceWith(f);
+      document.getElementById("send").remove();
+      return;
+    }
+    mount(C.editor);
+    wire(document);
+  }
+  if (C.mountDelay) setTimeout(start, C.mountDelay); else start();
+  const nav = document.getElementById("nav-chat");
+  if (nav && C.nav) nav.addEventListener("click", (e) => {
+    e.preventDefault();
+    history.pushState({}, "", C.nav.path);
+    chatId = C.nav.path.split("/").pop();
+    // Client-side navigation: old messages load in and the composer is re-mounted.
+    thread.innerHTML = C.userMsg.replace("{T}", "an earlier question") + C.botMsg + C.userMsg.replace("{T}", "another earlier question") + C.botMsg;
+    slot.innerHTML = "";
+    setTimeout(() => mount(C.nav.editor || C.editor), 400);
+  });
+})();
+</script>
+</body>
+</html>
