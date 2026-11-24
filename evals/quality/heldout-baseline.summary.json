@@ -1,0 +1,246 @@
+{
+  "method": "coaching-quality",
+  "set": "heldout",
+  "label": "baseline",
+  "runAt": "2026-11-24T03:41:18.736Z",
+  "command": "npm run eval:quality -- --set heldout --label baseline",
+  "backend": "deployed /api/eval",
+  "models": {
+    "assistant": "gemini-flash-lite-latest (no thinking)",
+    "simulatedPerson": "gemini-flash-lite-latest (no thinking)",
+    "judge": "gemini-flash-lite-latest (thinking high)",
+    "resolvedVersions": [
+      "gemini-3.5-flash-lite"
+    ]
+  },
+  "twoTurnTips": [
+    "vague-build"
+  ],
+  "modelCalls": {
+    "total": 75,
+    "failedAndRetried": 3
+  },
+  "summary": {
+    "n": 15,
+    "wins": 9,
+    "ties": 4,
+    "losses": 2,
+    "meanOverall": {
+      "original": 3.64,
+      "withTip": 4.08
+    },
+    "pairedDelta": {
+      "mean": 0.43,
+      "stderr": 0.28
+    },
+    "perCriterionDelta": {
+      "fit": 0.57,
+      "assumptions": 0.4,
+      "actionability": 0.43,
+      "trust": 0.33
+    },
+    "medianReplyChars": {
+      "original": 2066,
+      "withTip": 1788
+    }
+  },
+  "perTip": {
+    "vague-build": {
+      "n": 3,
+      "wins": 1,
+      "ties": 1,
+      "losses": 1,
+      "meanOverall": {
+        "original": 3.38,
+        "withTip": 2.83
+      },
+      "pairedDelta": {
+        "mean": -0.54,
+        "stderr": 0.92
+      },
+      "perCriterionDelta": {
+        "fit": -1,
+        "assumptions": -0.67,
+        "actionability": -0.33,
+        "trust": -0.17
+      },
+      "medianReplyChars": {
+        "original": 5209,
+        "withTip": 1252
+      }
+    },
+    "vague-fix": {
+      "n": 3,
+      "wins": 2,
+      "ties": 0,
+      "losses": 1,
+      "meanOverall": {
+        "original": 4.54,
+        "withTip": 4.83
+      },
+      "pairedDelta": {
+        "mean": 0.29,
+        "stderr": 0.29
+      },
+      "perCriterionDelta": {
+        "fit": 0.33,
+        "assumptions": 0.5,
+        "actionability": 0.33,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 1722,
+        "withTip": 1788
+      }
+    },
+    "facts-no-sources": {
+      "n": 3,
+      "wins": 2,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 3.79,
+        "withTip": 4.92
+      },
+      "pairedDelta": {
+        "mean": 1.13,
+        "stderr": 0.4
+      },
+      "perCriterionDelta": {
+        "fit": 1,
+        "assumptions": 0.33,
+        "actionability": 1.33,
+        "trust": 1.83
+      },
+      "medianReplyChars": {
+        "original": 712,
+        "withTip": 2919
+      }
+    },
+    "no-example": {
+      "n": 3,
+      "wins": 2,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 2.54,
+        "withTip": 3.58
+      },
+      "pairedDelta": {
+        "mean": 1.04,
+        "stderr": 0.75
+      },
+      "perCriterionDelta": {
+        "fit": 1.67,
+        "assumptions": 1.33,
+        "actionability": 1.17,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 3528,
+        "withTip": 520
+      }
+    },
+    "paste-no-ask": {
+      "n": 3,
+      "wins": 2,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 3.96,
+        "withTip": 4.21
+      },
+      "pairedDelta": {
+        "mean": 0.25,
+        "stderr": 0.29
+      },
+      "perCriterionDelta": {
+        "fit": 0.83,
+        "assumptions": 0.5,
+        "actionability": -0.33,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 2761,
+        "withTip": 2551
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "build-bakery",
+      "tip": "vague-build",
+      "verdict": "loss"
+    },
+    {
+      "id": "build-discord-bot",
+      "tip": "vague-build",
+      "verdict": "tie"
+    },
+    {
+      "id": "build-workout-app",
+      "tip": "vague-build",
+      "verdict": "win"
+    },
+    {
+      "id": "fix-react-map",
+      "tip": "vague-fix",
+      "verdict": "win"
+    },
+    {
+      "id": "fix-excel-overnight",
+      "tip": "vague-fix",
+      "verdict": "win"
+    },
+    {
+      "id": "fix-python-rename",
+      "tip": "vague-fix",
+      "verdict": "loss"
+    },
+    {
+      "id": "facts-diabetes",
+      "tip": "facts-no-sources",
+      "verdict": "tie"
+    },
+    {
+      "id": "facts-business-failure",
+      "tip": "facts-no-sources",
+      "verdict": "win"
+    },
+    {
+      "id": "facts-pm-salary",
+      "tip": "facts-no-sources",
+      "verdict": "win"
+    },
+    {
+      "id": "style-linkedin-internship",
+      "tip": "no-example",
+      "verdict": "win"
+    },
+    {
+      "id": "style-landlord-email",
+      "tip": "no-example",
+      "verdict": "tie"
+    },
+    {
+      "id": "style-wedding-toast",
+      "tip": "no-example",
+      "verdict": "win"
+    },
+    {
+      "id": "paste-cover-letter",
+      "tip": "paste-no-ask",
+      "verdict": "tie"
+    },
+    {
+      "id": "paste-launch-email",
+      "tip": "paste-no-ask",
+      "verdict": "win"
+    },
+    {
+      "id": "paste-scholarship",
+      "tip": "paste-no-ask",
+      "verdict": "win"
+    }
+  ]
+}

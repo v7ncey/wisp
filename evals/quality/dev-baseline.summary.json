@@ -1,0 +1,221 @@
+{
+  "method": "coaching-quality",
+  "set": "dev",
+  "label": "baseline",
+  "runAt": "2026-11-24T03:47:00.522Z",
+  "command": "npm run eval:quality -- --set dev --label baseline",
+  "backend": "deployed /api/eval",
+  "models": {
+    "assistant": "gemini-flash-lite-latest (no thinking)",
+    "simulatedPerson": "gemini-flash-lite-latest (no thinking)",
+    "judge": "gemini-flash-lite-latest (thinking high)",
+    "resolvedVersions": [
+      "gemini-3.5-flash-lite"
+    ]
+  },
+  "twoTurnTips": [
+    "vague-build"
+  ],
+  "modelCalls": {
+    "total": 50,
+    "failedAndRetried": 2
+  },
+  "summary": {
+    "n": 10,
+    "wins": 5,
+    "ties": 1,
+    "losses": 4,
+    "meanOverall": {
+      "original": 3.68,
+      "withTip": 4.09
+    },
+    "pairedDelta": {
+      "mean": 0.41,
+      "stderr": 0.47
+    },
+    "perCriterionDelta": {
+      "fit": 0.5,
+      "assumptions": 0.65,
+      "actionability": 0.2,
+      "trust": 0.3
+    },
+    "medianReplyChars": {
+      "original": 2293,
+      "withTip": 1503
+    }
+  },
+  "perTip": {
+    "vague-build": {
+      "n": 2,
+      "wins": 0,
+      "ties": 0,
+      "losses": 2,
+      "meanOverall": {
+        "original": 4.63,
+        "withTip": 3.19
+      },
+      "pairedDelta": {
+        "mean": -1.44,
+        "stderr": 0.56
+      },
+      "perCriterionDelta": {
+        "fit": -2,
+        "assumptions": -0.75,
+        "actionability": -2.5,
+        "trust": -0.5
+      },
+      "medianReplyChars": {
+        "original": 5885,
+        "withTip": 1503
+      }
+    },
+    "vague-fix": {
+      "n": 2,
+      "wins": 1,
+      "ties": 0,
+      "losses": 1,
+      "meanOverall": {
+        "original": 4.31,
+        "withTip": 4.13
+      },
+      "pairedDelta": {
+        "mean": -0.19,
+        "stderr": 0.44
+      },
+      "perCriterionDelta": {
+        "fit": -0.25,
+        "assumptions": -0.5,
+        "actionability": 0,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 1625,
+        "withTip": 1065
+      }
+    },
+    "facts-no-sources": {
+      "n": 2,
+      "wins": 1,
+      "ties": 0,
+      "losses": 1,
+      "meanOverall": {
+        "original": 4,
+        "withTip": 4.88
+      },
+      "pairedDelta": {
+        "mean": 0.88,
+        "stderr": 1
+      },
+      "perCriterionDelta": {
+        "fit": 0.5,
+        "assumptions": 0.5,
+        "actionability": 1,
+        "trust": 1.5
+      },
+      "medianReplyChars": {
+        "original": 1892,
+        "withTip": 4184
+      }
+    },
+    "no-example": {
+      "n": 2,
+      "wins": 1,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 2.56,
+        "withTip": 3.63
+      },
+      "pairedDelta": {
+        "mean": 1.06,
+        "stderr": 0.81
+      },
+      "perCriterionDelta": {
+        "fit": 1.75,
+        "assumptions": 1.75,
+        "actionability": 0.75,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 3462,
+        "withTip": 773
+      }
+    },
+    "paste-no-ask": {
+      "n": 2,
+      "wins": 2,
+      "ties": 0,
+      "losses": 0,
+      "meanOverall": {
+        "original": 2.88,
+        "withTip": 4.63
+      },
+      "pairedDelta": {
+        "mean": 1.75,
+        "stderr": 1.25
+      },
+      "perCriterionDelta": {
+        "fit": 2.5,
+        "assumptions": 2.25,
+        "actionability": 1.75,
+        "trust": 0.5
+      },
+      "medianReplyChars": {
+        "original": 2495,
+        "withTip": 3423
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "build-club-site",
+      "tip": "vague-build",
+      "verdict": "loss"
+    },
+    {
+      "id": "build-budget-tool",
+      "tip": "vague-build",
+      "verdict": "loss"
+    },
+    {
+      "id": "fix-css-center",
+      "tip": "vague-fix",
+      "verdict": "loss"
+    },
+    {
+      "id": "fix-sql-count",
+      "tip": "vague-fix",
+      "verdict": "win"
+    },
+    {
+      "id": "facts-screen-time",
+      "tip": "facts-no-sources",
+      "verdict": "loss"
+    },
+    {
+      "id": "facts-coffee-history",
+      "tip": "facts-no-sources",
+      "verdict": "win"
+    },
+    {
+      "id": "style-instagram-caption",
+      "tip": "no-example",
+      "verdict": "win"
+    },
+    {
+      "id": "style-bio",
+      "tip": "no-example",
+      "verdict": "tie"
+    },
+    {
+      "id": "paste-club-newsletter",
+      "tip": "paste-no-ask",
+      "verdict": "win"
+    },
+    {
+      "id": "paste-intro-paragraph",
+      "tip": "paste-no-ask",
+      "verdict": "win"
+    }
+  ]
+}

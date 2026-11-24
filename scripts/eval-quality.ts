@@ -99,6 +99,8 @@ interface CaseResult {
   ruleFired: boolean;
   twoTurn: boolean;
   reusedOriginal: boolean;
+  /** Copied unchanged from the --reuse run because neither prompt changed. */
+  carriedOver?: boolean;
   verdict: Verdict;
   judgeAgreedWithItself: boolean;
   scores: { original: Scores; withTip: Scores };
@@ -171,8 +173,12 @@ async function main() {
   }
 
   const reused = new Map<string, Arm>();
+  const reusedRows = new Map<string, CaseResult>();
   if (values.reuse && existsSync(values.reuse)) {
-    for (const c of JSON.parse(readFileSync(values.reuse, "utf8")).cases ?? []) reused.set(c.id, c.original);
+    for (const c of JSON.parse(readFileSync(values.reuse, "utf8")).cases ?? []) {
+      reused.set(c.id, c.original);
+      reusedRows.set(c.id, c);
+    }
   }
 
   async function runArm(c: QualityCase, prompt: string): Promise<Arm> {
@@ -193,6 +199,13 @@ async function main() {
     const withTip = applyChips(c.prompt, TIPS[c.tip].chips, c.details ?? {});
     if (withTip === null) throw new Error(`${c.id}: a blank in ${c.tip}'s add-ons has no detail in the case`);
 
+    // Nothing about this case changed since the reused run: carry its result over without new calls.
+    const priorRow = reusedRows.get(c.id);
+    if (priorRow && priorRow.original.prompt === c.prompt && priorRow.withTip.prompt === withTip) {
+      console.log(`  carried over (${priorRow.verdict}): its add-ons didn't change`);
+      results.push({ ...priorRow, carriedOver: true });
+      continue;
+    }
     const prior = reused.get(c.id);
     const original = prior && prior.prompt === c.prompt ? prior : await runArm(c, c.prompt);
     const tipped = await runArm(c, withTip);
@@ -255,15 +268,28 @@ async function main() {
     simulatedPersonInstructions: USER_SIM_SYSTEM,
     addOns: Object.fromEntries(tips.map((t) => [t, TIPS[t].chips])),
     modelCalls: { total: calls, failedAndRetried: failedCalls },
+    carriedOver: results.filter((r) => r.carriedOver).map((r) => r.id),
+    reusedFrom: values.reuse ?? null,
     summary: summarize(results),
     perTip: Object.fromEntries(tips.map((t) => [t, summarize(results.filter((r) => r.tip === t))])),
     cases: results,
   };
   const file = `evals/quality/${set}-${values.label}.json`;
   writeFileSync(file, JSON.stringify(out, null, 2) + "\n");
+  writeSummary(file);
   const s = out.summary;
   console.log(`\n${set}/${values.label}: with tip won ${s.wins}, tied ${s.ties}, lost ${s.losses} of ${s.n}. Overall ${s.meanOverall.original} -> ${s.meanOverall.withTip} (paired delta ${s.pairedDelta.mean} ± ${s.pairedDelta.stderr} SE). ${calls} model calls.`);
   console.log(`Wrote ${file}`);
 }
 
-if (process.argv[1]?.endsWith("eval-quality.ts")) await main();
+/** A small copy without transcripts, for the demo page (the full file is ~100 KB). */
+export function writeSummary(file: string) {
+  const { cases, rubric, simulatedPersonInstructions, addOns, ...rest } = JSON.parse(readFileSync(file, "utf8"));
+  const rows = (cases as CaseResult[]).map((c) => ({ id: c.id, tip: c.tip, verdict: c.verdict }));
+  writeFileSync(file.replace(/\.json$/, ".summary.json"), JSON.stringify({ ...rest, cases: rows }, null, 2) + "\n");
+}
+
+if (process.argv[1]?.endsWith("eval-quality.ts")) {
+  if (process.argv[2] === "--summarize") for (const f of process.argv.slice(3)) writeSummary(f);
+  else await main();
+}

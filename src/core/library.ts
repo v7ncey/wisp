@@ -69,12 +69,20 @@ export const TIPS: Record<TipId, TipDefinition> = {
     id: "vague-build",
     title: "Let it ask before it builds",
     noticed: "This is a short, open-ended request, so the AI will have to guess the details.",
-    why: "If it asks clarifying questions and shows a plan first, a wrong guess costs you one reply instead of a long answer you throw away.",
+    why: "A few questions up front mean it builds what you actually want, instead of a long guess you throw away.",
+    // v2 of these add-ons (2026-11-24): the old second one, "show me a plan and wait for my OK", made the
+    // AI stop at a plan and ask permission after the questions were answered, which lost on the
+    // coaching-quality eval (evals/quality/dev-baseline.json). A first rewrite fixed the stalling but the
+    // AI then asked shallow questions (currency, colors) and still lost (dev-after-try1.json), so the
+    // first add-on now points the questions at what changes the build.
     chips: [
-      { label: "Ask me clarifying questions first", insert: "Before you start, ask me clarifying questions about anything that's unclear." },
-      { label: "Show me a plan first", insert: "Then show me a short plan and wait for my OK before you build it." },
+      {
+        label: "Ask me what matters first",
+        insert: "Before you start, ask me up to 3 questions whose answers would most change what you build, like who it's for, what it must do, and what I'll use to run or edit it.",
+      },
+      { label: "Then build it", insert: "Once I answer, give me a 3-line plan and then build it right away, without waiting for my OK." },
     ],
-    learnPattern: /clarifying questions?|ask me (some |any )?questions|(show|give|make)( me)? a (short )?plan|plan first/i,
+    learnPattern: /clarifying questions?|ask me (up to \d+ |a few |some |any )?(short )?questions|(show|give|make)( me)? a (short |\d-line )?plan|plan first/i,
   },
   "paste-no-ask": {
     id: "paste-no-ask",

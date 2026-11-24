@@ -1,0 +1,261 @@
+{
+  "method": "coaching-quality",
+  "set": "heldout",
+  "label": "after",
+  "runAt": "2026-11-24T03:52:14.855Z",
+  "command": "npm run eval:quality -- --set heldout --label after --reuse evals/quality/heldout-baseline.json",
+  "backend": "deployed /api/eval",
+  "models": {
+    "assistant": "gemini-flash-lite-latest (no thinking)",
+    "simulatedPerson": "gemini-flash-lite-latest (no thinking)",
+    "judge": "gemini-flash-lite-latest (thinking high)",
+    "resolvedVersions": [
+      "gemini-3.5-flash-lite"
+    ]
+  },
+  "twoTurnTips": [
+    "vague-build"
+  ],
+  "modelCalls": {
+    "total": 15,
+    "failedAndRetried": 0
+  },
+  "carriedOver": [
+    "fix-react-map",
+    "fix-excel-overnight",
+    "fix-python-rename",
+    "facts-diabetes",
+    "facts-business-failure",
+    "facts-pm-salary",
+    "style-linkedin-internship",
+    "style-landlord-email",
+    "style-wedding-toast",
+    "paste-cover-letter",
+    "paste-launch-email",
+    "paste-scholarship"
+  ],
+  "reusedFrom": "evals/quality/heldout-baseline.json",
+  "summary": {
+    "n": 15,
+    "wins": 8,
+    "ties": 4,
+    "losses": 3,
+    "meanOverall": {
+      "original": 3.71,
+      "withTip": 4.03
+    },
+    "pairedDelta": {
+      "mean": 0.33,
+      "stderr": 0.3
+    },
+    "perCriterionDelta": {
+      "fit": 0.43,
+      "assumptions": 0.27,
+      "actionability": 0.23,
+      "trust": 0.37
+    },
+    "medianReplyChars": {
+      "original": 2066,
+      "withTip": 2304
+    }
+  },
+  "perTip": {
+    "vague-build": {
+      "n": 3,
+      "wins": 0,
+      "ties": 1,
+      "losses": 2,
+      "meanOverall": {
+        "original": 3.71,
+        "withTip": 2.63
+      },
+      "pairedDelta": {
+        "mean": -1.08,
+        "stderr": 0.79
+      },
+      "perCriterionDelta": {
+        "fit": -1.67,
+        "assumptions": -1.33,
+        "actionability": -1.33,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 5209,
+        "withTip": 5393
+      }
+    },
+    "vague-fix": {
+      "n": 3,
+      "wins": 2,
+      "ties": 0,
+      "losses": 1,
+      "meanOverall": {
+        "original": 4.54,
+        "withTip": 4.83
+      },
+      "pairedDelta": {
+        "mean": 0.29,
+        "stderr": 0.29
+      },
+      "perCriterionDelta": {
+        "fit": 0.33,
+        "assumptions": 0.5,
+        "actionability": 0.33,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 1722,
+        "withTip": 1788
+      }
+    },
+    "facts-no-sources": {
+      "n": 3,
+      "wins": 2,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 3.79,
+        "withTip": 4.92
+      },
+      "pairedDelta": {
+        "mean": 1.13,
+        "stderr": 0.4
+      },
+      "perCriterionDelta": {
+        "fit": 1,
+        "assumptions": 0.33,
+        "actionability": 1.33,
+        "trust": 1.83
+      },
+      "medianReplyChars": {
+        "original": 712,
+        "withTip": 2919
+      }
+    },
+    "no-example": {
+      "n": 3,
+      "wins": 2,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 2.54,
+        "withTip": 3.58
+      },
+      "pairedDelta": {
+        "mean": 1.04,
+        "stderr": 0.75
+      },
+      "perCriterionDelta": {
+        "fit": 1.67,
+        "assumptions": 1.33,
+        "actionability": 1.17,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 3528,
+        "withTip": 520
+      }
+    },
+    "paste-no-ask": {
+      "n": 3,
+      "wins": 2,
+      "ties": 1,
+      "losses": 0,
+      "meanOverall": {
+        "original": 3.96,
+        "withTip": 4.21
+      },
+      "pairedDelta": {
+        "mean": 0.25,
+        "stderr": 0.29
+      },
+      "perCriterionDelta": {
+        "fit": 0.83,
+        "assumptions": 0.5,
+        "actionability": -0.33,
+        "trust": 0
+      },
+      "medianReplyChars": {
+        "original": 2761,
+        "withTip": 2551
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "build-bakery",
+      "tip": "vague-build",
+      "verdict": "loss"
+    },
+    {
+      "id": "build-discord-bot",
+      "tip": "vague-build",
+      "verdict": "loss"
+    },
+    {
+      "id": "build-workout-app",
+      "tip": "vague-build",
+      "verdict": "tie"
+    },
+    {
+      "id": "fix-react-map",
+      "tip": "vague-fix",
+      "verdict": "win"
+    },
+    {
+      "id": "fix-excel-overnight",
+      "tip": "vague-fix",
+      "verdict": "win"
+    },
+    {
+      "id": "fix-python-rename",
+      "tip": "vague-fix",
+      "verdict": "loss"
+    },
+    {
+      "id": "facts-diabetes",
+      "tip": "facts-no-sources",
+      "verdict": "tie"
+    },
+    {
+      "id": "facts-business-failure",
+      "tip": "facts-no-sources",
+      "verdict": "win"
+    },
+    {
+      "id": "facts-pm-salary",
+      "tip": "facts-no-sources",
+      "verdict": "win"
+    },
+    {
+      "id": "style-linkedin-internship",
+      "tip": "no-example",
+      "verdict": "win"
+    },
+    {
+      "id": "style-landlord-email",
+      "tip": "no-example",
+      "verdict": "tie"
+    },
+    {
+      "id": "style-wedding-toast",
+      "tip": "no-example",
+      "verdict": "win"
+    },
+    {
+      "id": "paste-cover-letter",
+      "tip": "paste-no-ask",
+      "verdict": "tie"
+    },
+    {
+      "id": "paste-launch-email",
+      "tip": "paste-no-ask",
+      "verdict": "win"
+    },
+    {
+      "id": "paste-scholarship",
+      "tip": "paste-no-ask",
+      "verdict": "win"
+    }
+  ]
+}
