@@ -1,6 +1,6 @@
 {
   "name": "wisp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Wisp: a small companion that watches how you prompt AI chat sites and pops up with tips you can click to apply.",
   "type": "module",

@@ -122,7 +122,9 @@ async function runVariant(browser: Any, v: Variant, contentJs: string): Promise<
     foundEditor: false, insertedAddOn: false, countedSend: false,
     noticeShown: false, noticeText: null, working: false, toldUser: null, panelLine: null, fixtureOk: false, error: null,
   };
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  // SHOTS=<dir> also saves a screenshot of the notice and of the stats panel (for docs); results are unaffected.
+  const shots = process.env.SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: shots ? 2 : 1 });
   const page = await context.newPage();
   const html = readFileSync(join(FIXTURES, v.file), "utf8");
   const host = HOSTS[v.site];
@@ -187,6 +189,7 @@ async function runVariant(browser: Any, v: Variant, contentJs: string): Promise<
     row.noticeShown = notices.length > 0;
     row.noticeText = notices[0] ?? null;
     const state = await page.locator("#wisp-root .wisp").getAttribute("data-state");
+    if (shots && state !== "idle") await page.screenshot({ path: join(shots, `${v.id}-notice.png`) });
     if (state !== "idle") {
       // Close whatever is open (a notice) so the orb opens the panel.
       await page.locator("#wisp-root .bubble .x").first().click().catch(() => {});
@@ -194,6 +197,7 @@ async function runVariant(browser: Any, v: Variant, contentJs: string): Promise<
     await page.locator("#wisp-root .orb-btn").click();
     const conn = page.locator("#wisp-root .bubble .conn");
     row.panelLine = await conn.first().waitFor({ state: "visible", timeout: 1500 }).then(() => conn.first().textContent(), () => null);
+    if (shots) await page.screenshot({ path: join(shots, `${v.id}-panel.png`) });
   } catch (e) {
     row.error = (e as Error).message.split("\n")[0];
   }
