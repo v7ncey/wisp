@@ -1,23 +1,12 @@
 {
   "label": "baseline",
-  "date": "2026-11-24T07:25:12.533Z",
+  "date": "2026-11-24T07:27:49.669Z",
   "command": "npm run eval:ux -- --label baseline",
   "target": "local build of this commit (scripts/serve.ts)",
-  "commit": "1f28bd7",
+  "commit": "737e915",
   "uncommittedChanges": "no",
   "lighthouse": {
     "mobile": {
-      "performance": 97,
-      "accessibility": 96,
-      "bestPractices": 100,
-      "seo": 100,
-      "failedAccessibilityAudits": [
-        "color-contrast"
-      ],
-      "lcpMs": 1291,
-      "cls": 0.103
-    },
-    "desktop": {
       "performance": 100,
       "accessibility": 96,
       "bestPractices": 100,
@@ -25,8 +14,19 @@
       "failedAccessibilityAudits": [
         "color-contrast"
       ],
-      "lcpMs": 351,
+      "lcpMs": 1299,
       "cls": 0
+    },
+    "desktop": {
+      "performance": 94,
+      "accessibility": 96,
+      "bestPractices": 100,
+      "seo": 100,
+      "failedAccessibilityAudits": [
+        "color-contrast"
+      ],
+      "lcpMs": 342,
+      "cls": 0.148
     }
   },
   "axe": {
@@ -118,11 +118,11 @@
   },
   "timeToFirstTipMs": {
     "runs": [
-      2341,
-      2392,
-      2339
+      2339,
+      2335,
+      2330
     ],
-    "median": 2341
+    "median": 2335
   },
   "keyboardTask": {
     "success": true,
@@ -139,5 +139,26 @@
     "vh": 844,
     "scrollY": 520,
     "insideViewport": true
+  },
+  "phoneComposer": {
+    "top": 898,
+    "bottom": 987,
+    "vh": 844,
+    "onFirstScreen": false
+  },
+  "phoneKeyboardTip": {
+    "top": -95,
+    "bottom": 146,
+    "vh": 450,
+    "fullyVisible": false
+  },
+  "clearPromptFeedback": {
+    "feedbackShown": false,
+    "text": null
+  },
+  "screenReader": {
+    "title": "Let it ask before it builds",
+    "announced": true,
+    "escapeCloses": false
   }
 }

@@ -180,6 +180,68 @@ async function phoneTip(browser: Any, url: string) {
   return { ...r, insideViewport: r.top >= 0 && r.left >= 0 && r.bottom <= r.vh && r.right <= r.vw };
 }
 
+/** Phone, page as loaded: is the whole message box on the first screen? */
+async function phoneComposer(browser: Any, url: string) {
+  const page = await newPage(browser, url, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const r = await page.$eval("#draft", (el: Element) => {
+    const b = el.getBoundingClientRect();
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), vh: innerHeight };
+  });
+  await page.close();
+  return { ...r, onFirstScreen: r.bottom <= r.vh };
+}
+
+/** Phone with the keyboard up (simulated as a 390x450 viewport): is the open tip fully visible? */
+async function phoneKeyboardTip(browser: Any, url: string) {
+  const page = await newPage(browser, url, { viewport: { width: 390, height: 450 }, isMobile: true, hasTouch: true });
+  await page.click("#draft");
+  await page.keyboard.type(DRAFT, { delay: 20 });
+  await tipOpen(page).waitFor({ timeout: 10_000 });
+  await sleep(500);
+  const r = await page.evaluate(() => {
+    const b = document.querySelector("#wisp-host")!.shadowRoot!.querySelector(".bubble")!.getBoundingClientRect();
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), vh: innerHeight };
+  });
+  await page.close();
+  return { ...r, fullyVisible: r.top >= 0 && r.bottom <= r.vh };
+}
+
+/** Typing a clear prompt (no tip applies): does the visitor see any sign that Wisp looked? */
+async function clearPromptFeedback(browser: Any, url: string) {
+  const page = await newPage(browser, url);
+  await page.click("#draft");
+  await page.keyboard.type("write an essay about climate change", { delay: 20 });
+  const shown = await page
+    .waitForFunction(() => document.querySelector("#wisp-host")?.shadowRoot?.querySelector(".wisp")?.getAttribute("data-state") === "open", null, { timeout: 6000 })
+    .then(() => true, () => false);
+  const text = shown ? await page.evaluate(() => document.querySelector("#wisp-host")!.shadowRoot!.querySelector(".bubble")!.textContent?.trim()) : null;
+  await page.close();
+  return { feedbackShown: shown, text };
+}
+
+/** With a tip open: does a status line (role=status / aria-live) carry the tip's title, and does Escape close it? */
+async function screenReaderAndEscape(browser: Any, url: string) {
+  const page = await newPage(browser, url);
+  await page.click("#draft");
+  await page.keyboard.type(DRAFT, { delay: 20 });
+  await tipOpen(page).waitFor({ timeout: 10_000 });
+  await sleep(600);
+  const r = await page.evaluate(() => {
+    const root = document.querySelector("#wisp-host")!.shadowRoot!;
+    const title = root.querySelector(".bubble header strong")?.textContent?.trim() ?? "";
+    const live = [...root.querySelectorAll('[role="status"], [aria-live]'), ...document.querySelectorAll('[role="status"], [aria-live]')]
+      .filter((el) => !(el as HTMLElement).classList.contains("bubble") || getComputedStyle(el).visibility !== "hidden")
+      .map((el) => el.textContent ?? "");
+    return { title, announced: !!title && live.some((t) => t.includes(title)) };
+  });
+  await page.focus("#draft");
+  await page.keyboard.press("Escape");
+  await sleep(400);
+  const state = await page.evaluate(() => document.querySelector("#wisp-host")!.shadowRoot!.querySelector(".wisp")!.getAttribute("data-state"));
+  await page.close();
+  return { ...r, escapeCloses: state === "idle" };
+}
+
 async function main() {
   const local = values.url ? null : await serveLocally();
   const url = values.url ?? local!.url;
@@ -209,6 +271,12 @@ async function main() {
     console.log("keyboard", JSON.stringify(out.keyboardTask));
     out.phoneTip = await phoneTip(browser, url);
     console.log("phone", JSON.stringify(out.phoneTip));
+    out.phoneComposer = await phoneComposer(browser, url);
+    out.phoneKeyboardTip = await phoneKeyboardTip(browser, url);
+    out.clearPromptFeedback = await clearPromptFeedback(browser, url);
+    out.screenReader = await screenReaderAndEscape(browser, url);
+    console.log("phone composer", JSON.stringify(out.phoneComposer), "keyboard tip", JSON.stringify(out.phoneKeyboardTip));
+    console.log("clear prompt", JSON.stringify(out.clearPromptFeedback), "sr", JSON.stringify(out.screenReader));
     mkdirSync("evals/ux", { recursive: true });
     writeFileSync(`evals/ux/${values.label}.json`, JSON.stringify(out, null, 2) + "\n");
     console.log(`Wrote evals/ux/${values.label}.json`);
