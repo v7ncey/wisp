@@ -28,15 +28,40 @@ export const BACKUP_MODEL = "gemini-flash-latest";
 
 type Attempt = { ok: true; value: unknown } | { ok: false; reason: "timeout" | "rate-limited" | "bad-response" | "error"; overloaded?: boolean };
 
-async function callModel(model: string, key: string, system: string, user: string, signal: AbortSignal, fetchImpl: Fetch): Promise<Attempt> {
+/** One turn of a conversation sent to Gemini. */
+export interface Turn {
+  role: "user" | "model";
+  text: string;
+}
+
+export interface CallOptions {
+  model?: string;
+  /** Omit for a plain chat-assistant call with no system instruction. */
+  system?: string;
+  turns: Turn[];
+  /** true: ask for JSON and parse it. false: return the reply as plain text. */
+  json?: boolean;
+  temperature?: number;
+  maxOutputTokens?: number;
+  timeoutMs?: number;
+  /** Try BACKUP_MODEL once when the model is overloaded. Default true; evals turn it off to keep one model. */
+  backup?: boolean;
+}
+
+async function callModel(model: string, key: string, opts: CallOptions, signal: AbortSignal, fetchImpl: Fetch): Promise<Attempt> {
+  const json = opts.json ?? true;
   const res = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     signal,
     headers: { "content-type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: user }] }],
-      generationConfig: { responseMimeType: "application/json", temperature: 0.3, maxOutputTokens: 400 },
+      ...(opts.system ? { systemInstruction: { parts: [{ text: opts.system }] } } : {}),
+      contents: opts.turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
+      generationConfig: {
+        ...(json ? { responseMimeType: "application/json" } : {}),
+        temperature: opts.temperature ?? 0.3,
+        maxOutputTokens: opts.maxOutputTokens ?? 400,
+      },
     }),
   });
   if (res.status === 429) {
@@ -57,6 +82,9 @@ async function callModel(model: string, key: string, system: string, user: strin
   };
   console.info(`Gemini ${data.modelVersion ?? model} ok: thoughts=${data.usageMetadata?.thoughtsTokenCount ?? 0} output=${data.usageMetadata?.candidatesTokenCount ?? 0}`);
   const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+  if (!(opts.json ?? true)) {
+    return text.trim() ? { ok: true, value: { text, model: data.modelVersion ?? model } } : { ok: false, reason: "bad-response" };
+  }
   try {
     return { ok: true, value: JSON.parse(text) };
   } catch {
@@ -64,15 +92,16 @@ async function callModel(model: string, key: string, system: string, user: strin
   }
 }
 
-async function callGemini(env: GeminiEnv, system: string, user: string, fetchImpl: Fetch): Promise<GeminiResult<unknown>> {
+/** Calls Gemini once (plus one backup-model try if the main model is overloaded). Never throws. */
+export async function generate(env: GeminiEnv, opts: CallOptions, fetchImpl: Fetch = fetch): Promise<GeminiResult<unknown>> {
   if (!env.GEMINI_API_KEY) return { ok: false, reason: "no-key" };
-  const model = env.GEMINI_MODEL || DEFAULT_MODEL;
+  const model = opts.model || env.GEMINI_MODEL || DEFAULT_MODEL;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? TIMEOUT_MS);
   try {
-    let result = await callModel(model, env.GEMINI_API_KEY, system, user, ctrl.signal, fetchImpl);
-    if (!result.ok && result.overloaded && model !== BACKUP_MODEL) {
-      result = await callModel(BACKUP_MODEL, env.GEMINI_API_KEY, system, user, ctrl.signal, fetchImpl);
+    let result = await callModel(model, env.GEMINI_API_KEY, opts, ctrl.signal, fetchImpl);
+    if (!result.ok && result.overloaded && (opts.backup ?? true) && model !== BACKUP_MODEL) {
+      result = await callModel(BACKUP_MODEL, env.GEMINI_API_KEY, opts, ctrl.signal, fetchImpl);
     }
     return result.ok ? result : { ok: false, reason: result.reason };
   } catch (e) {
@@ -99,7 +128,7 @@ export async function personalize(draft: string, tipId: TipId, env: GeminiEnv, f
     "Also write one add-on sentence the user could append to their draft to apply the tip ('insert', at most 30 words, written in the user's voice) and a 2-5 word 'label' for it.",
     'Reply with JSON only: {"noticed": string, "why": string, "chip": {"label": string, "insert": string}}',
   ].join("\n");
-  const r = await callGemini(env, system, `<draft>\n${draft.slice(0, MAX_DRAFT_CHARS)}\n</draft>`, fetchImpl);
+  const r = await generate(env, { system, turns: [{ role: "user", text: `<draft>\n${draft.slice(0, MAX_DRAFT_CHARS)}\n</draft>` }] }, fetchImpl);
   if (!r.ok) return r;
   const v = r.value as Record<string, unknown>;
   const noticed = str(v.noticed, 300);
@@ -122,7 +151,7 @@ export async function classify(draft: string, env: GeminiEnv, fetchImpl: Fetch =
     "Specific details: vague-build is only for requests to build/make something with no details; vague-fix only for complaints with no error or expected result; facts-no-sources only when asking for factual claims or numbers without asking for sources; no-example only for style-dependent writing (posts, emails, bios, captions, stories) with no example, tone or length; paste-no-ask only for a long pasted text with a missing or one-word ask.",
     'Reply with JSON only: {"tips": string[]}',
   ].join("\n");
-  const r = await callGemini(env, system, `<draft>\n${draft.slice(0, MAX_DRAFT_CHARS)}\n</draft>`, fetchImpl);
+  const r = await generate(env, { system, turns: [{ role: "user", text: `<draft>\n${draft.slice(0, MAX_DRAFT_CHARS)}\n</draft>` }] }, fetchImpl);
   if (!r.ok) return r;
   const tips = (r.value as { tips?: unknown }).tips;
   if (!Array.isArray(tips)) return { ok: false, reason: "bad-response" };

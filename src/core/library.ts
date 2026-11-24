@@ -83,7 +83,7 @@ export const TIPS: Record<TipId, TipDefinition> = {
     why: "\"Thoughts?\" tends to get generic praise. Naming the goal and the audience gets feedback you can act on.",
     chips: [
       { label: "Focus the feedback", insert: "Focus on clarity and structure, and list the 3 changes that would help most." },
-      { label: "Name the audience", insert: "The audience for this is: " },
+      { label: "Name the audience", insert: "The audience for this is: ", fill: ["audience"] },
     ],
     learnPattern: /audience (is|for)|focus (on|your feedback)|the goal (is|of this)|feedback on (the )?(clarity|structure|tone|flow)/i,
   },
@@ -93,8 +93,8 @@ export const TIPS: Record<TipId, TipDefinition> = {
     noticed: "\"Fix it\" without details means the AI has to guess what's broken.",
     why: "The exact error, or what you expected versus what happened, lets it fix the real problem on the first try.",
     chips: [
-      { label: "Paste the exact error", insert: "Here's the exact error message: " },
-      { label: "Expected vs. actual", insert: "I expected ___, but instead ___." },
+      { label: "Paste the exact error", insert: "Here's the exact error message: ", fill: ["error"] },
+      { label: "Expected vs. actual", insert: "I expected ___, but instead ___.", fill: ["expected", "actual"] },
     ],
     learnPattern: /error message|i expected|expected .{0,60}(but|instead)/i,
   },
@@ -112,8 +112,8 @@ export const TIPS: Record<TipId, TipDefinition> = {
     noticed: "You're asking for writing with a particular style, but haven't shown what you like.",
     why: "Style is hard to describe and easy to show. One example gets closer than a paragraph of adjectives.",
     chips: [
-      { label: "Add an example", insert: "Here's an example of the style I like: " },
-      { label: "Set a length", insert: "Keep it to about ___ words." },
+      { label: "Add an example", insert: "Here's an example of the style I like: ", fill: ["example"] },
+      { label: "Set a length", insert: "Keep it to about ___ words.", fill: ["words"] },
     ],
     learnPattern: /for example|an example|in the style of|match (this|the|my) tone|like this one/i,
   },

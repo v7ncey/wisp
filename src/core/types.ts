@@ -26,7 +26,16 @@ export interface Chip {
   label: string;
   /** Text appended to the draft. Ends with a space/colon when the user should finish it. */
   insert: string;
+  /**
+   * What the user is expected to fill in, in order: each "___" in `insert`, or (when there's
+   * none) the text after a trailing colon. Used by the UI to point at blanks and by the
+   * coaching-quality eval to play the user filling them.
+   */
+  fill?: BlankKind[];
 }
+
+/** The kinds of detail an add-on asks the user to supply. */
+export type BlankKind = "error" | "expected" | "actual" | "audience" | "example" | "words";
 
 /** A real product feature Wisp may point to. Kept with a "last checked" date because these change often. */
 export interface Feature {

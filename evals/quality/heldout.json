@@ -1,0 +1,137 @@
+{
+  "about": "Coaching-quality eval, held-out set. Written 2026-11-24 before any coaching-quality run, and not used for tuning. Each case is a draft Wisp's rules flag, the hidden goal the person had (only the judge sees it), and the details a person would type into an add-on's blanks. Written by the Wisp team (an AI agent), not by users, so it shares the builder's blind spots.",
+  "cases": [
+    {
+      "id": "build-bakery",
+      "tip": "vague-build",
+      "prompt": "make me a website for my bakery",
+      "goal": "The person owns a small family bakery in Queens and can't code. They want a simple one-page site: menu with prices, opening hours, address with a map, and a 'call to order' button. It must be free to host and easy for them to edit themselves later, without a developer."
+    },
+    {
+      "id": "build-discord-bot",
+      "tip": "vague-build",
+      "prompt": "create a discord bot",
+      "goal": "The person runs a 40-member study Discord server and knows a little Python. They want a bot that posts a reminder every morning listing exams in the next 7 days, from a list members add to with a /addexam command. They don't know how to host a bot."
+    },
+    {
+      "id": "build-workout-app",
+      "tip": "vague-build",
+      "prompt": "build an app to track my workouts",
+      "goal": "The person is a beginner programmer who lifts 3 days a week. They want a simple phone-friendly web page to log sets, reps and weight per exercise and see a chart of their bench and squat over time. No accounts or servers; storing data on the phone is fine."
+    },
+    {
+      "id": "fix-react-map",
+      "tip": "vague-fix",
+      "history": [
+        { "role": "user", "text": "Write a React component that fetches posts from https://api.example.com/posts and shows their titles in a list." },
+        { "role": "model", "text": "```jsx\nimport { useEffect, useState } from 'react';\n\nexport default function Posts() {\n  const [posts, setPosts] = useState();\n  useEffect(() => {\n    fetch('https://api.example.com/posts').then(r => r.json()).then(setPosts);\n  }, []);\n  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;\n}\n```" }
+      ],
+      "prompt": "my code still doesn't work, can you fix it",
+      "goal": "The person used the component exactly as given. The page goes blank on load and the console shows: TypeError: Cannot read properties of undefined (reading 'map'). They want the list of post titles to appear once the data loads, and to understand what was wrong.",
+      "details": {
+        "error": "TypeError: Cannot read properties of undefined (reading 'map')",
+        "expected": "the list of post titles to show up after the page loads",
+        "actual": "the page goes blank as soon as it loads"
+      }
+    },
+    {
+      "id": "fix-excel-overnight",
+      "tip": "vague-fix",
+      "history": [
+        { "role": "user", "text": "In Excel, B2 has a clock-in time and C2 has a clock-out time. Give me a formula for hours worked." },
+        { "role": "model", "text": "Use =C2-B2 in D2 and format the cell as time (h:mm). Copy it down the column for the other rows." }
+      ],
+      "prompt": "that didn't work, it's still broken",
+      "goal": "The person tracks night shifts. A shift from 22:00 to 06:30 shows ######## instead of hours. They want a formula that gives 8:30 for overnight shifts and still works for normal day shifts.",
+      "details": {
+        "error": "the cell just shows ######## for my shift from 22:00 to 06:30",
+        "expected": "8:30 for a night shift from 22:00 to 06:30",
+        "actual": "the cell shows ########"
+      }
+    },
+    {
+      "id": "fix-python-rename",
+      "tip": "vague-fix",
+      "history": [
+        { "role": "user", "text": "Write a Python script that renames every .jpg in a folder to the date it was modified, like 2026-11-02.jpg." },
+        { "role": "model", "text": "```python\nimport os, datetime\nfolder = 'photos'\nfor name in os.listdir(folder):\n    if name.endswith('.jpg'):\n        t = os.path.getmtime(name)\n        new = datetime.date.fromtimestamp(t).isoformat() + '.jpg'\n        os.rename(name, new)\n```" }
+      ],
+      "prompt": "nope, still not working",
+      "goal": "The person ran the script from the folder above 'photos'. It crashes with FileNotFoundError: [Errno 2] No such file or directory: 'IMG_0001.jpg'. They also have several photos taken the same day and don't want any to be overwritten.",
+      "details": {
+        "error": "FileNotFoundError: [Errno 2] No such file or directory: 'IMG_0001.jpg'",
+        "expected": "every photo in the photos folder renamed to its date",
+        "actual": "it crashes on the first photo"
+      }
+    },
+    {
+      "id": "facts-diabetes",
+      "tip": "facts-no-sources",
+      "prompt": "how many people in the us have type 2 diabetes",
+      "goal": "The person is making a slide for a health-class presentation and needs an accurate, recent figure they can cite on the slide, with the year it refers to. Being wrong in front of the class would be embarrassing."
+    },
+    {
+      "id": "facts-business-failure",
+      "tip": "facts-no-sources",
+      "prompt": "what percentage of small businesses fail in the first year",
+      "goal": "The person is writing a pitch deck for an entrepreneurship class. They have heard very different numbers for this and want a defensible figure, where it comes from, and how confident to be in it."
+    },
+    {
+      "id": "facts-pm-salary",
+      "tip": "facts-no-sources",
+      "prompt": "average salary for a product manager in new york",
+      "goal": "The person has an offer for an associate (entry-level) product manager role in New York at $135k base and wants to know if it's fair. They need a realistic range for that level and where the numbers come from, so they can negotiate."
+    },
+    {
+      "id": "style-linkedin-internship",
+      "tip": "no-example",
+      "prompt": "write a linkedin post about finishing my internship",
+      "goal": "The person finished a summer internship at a fintech startup. They want a LinkedIn post in their own low-key voice: about 120 words, thanking their team, one specific thing they learned (shipping a feature end to end), no 'thrilled to announce', at most 2 hashtags.",
+      "details": {
+        "example": "\"Wrapped up my first hackathon this weekend. We didn't win, but I learned more about scoping in 36 hours than in a semester. Big thanks to my teammates for putting up with my 2am ideas.\"",
+        "words": "120"
+      }
+    },
+    {
+      "id": "style-landlord-email",
+      "tip": "no-example",
+      "prompt": "draft an email to my landlord about the broken heater",
+      "goal": "The heater has been broken for 5 days in November and the person already reported it once by text with no reply. They want a polite but firm email asking for a repair by Friday and a reply with a time, that keeps a written record. About 150 words.",
+      "details": {
+        "example": "\"Hi Mr. Alvarez, just following up on the leak under the sink I mentioned last week. Could you let me know when someone can come by? Thanks, Dana\"",
+        "words": "150"
+      }
+    },
+    {
+      "id": "style-wedding-toast",
+      "tip": "no-example",
+      "prompt": "write a toast for my sister's wedding",
+      "goal": "The person is the maid of honor. They want a warm, lightly funny toast of about 2 minutes (around 250 words) that mentions the road trip where the couple met, and sounds like them speaking, not a greeting card.",
+      "details": {
+        "example": "\"Okay, quick story. When Maya was nine she sold lemonade for a week, made eleven dollars, and spent all of it on a birthday present for me. That's my sister.\"",
+        "words": "250"
+      }
+    },
+    {
+      "id": "paste-cover-letter",
+      "tip": "paste-no-ask",
+      "prompt": "I'm writing to apply for the Associate Product Manager role at Brightpath Health. As a computer science student at Pace University, I have spent the past two years building things that people actually use. Last summer I interned at a fintech startup, where I worked with engineers and designers to ship a feature that let users split bills with friends. I talked to more than a dozen users, wrote the requirements, and tracked adoption after launch. I am passionate about healthcare because my family has struggled to navigate insurance, and I believe technology can make that process simpler and more humane. I am a fast learner, a strong communicator, and I work well on teams. I would love the opportunity to bring my skills to Brightpath Health and help build products that make a difference in patients' lives. Thank you for your time and consideration.\n\nthoughts?",
+      "goal": "The person is applying for an associate product manager job at a health-tech startup. They want this cover letter to stand out to a recruiter who skims it in 30 seconds, and want concrete changes, not praise.",
+      "details": { "audience": "a recruiter at a health-tech startup hiring an associate product manager, who skims each letter in about 30 seconds" }
+    },
+    {
+      "id": "paste-launch-email",
+      "tip": "paste-no-ask",
+      "prompt": "Subject: Introducing Smart Categories\n\nHi there,\n\nWe are excited to announce the launch of Smart Categories, our newest feature, which leverages advanced machine learning algorithms to automatically classify your transactions into intelligent spending categories. Smart Categories analyzes merchant metadata, transaction amounts and historical patterns in order to deliver a more streamlined and personalized budgeting experience. With this feature enabled, you will no longer need to manually tag each purchase, saving you valuable time and effort. Additionally, Smart Categories continuously improves over time as it learns from your corrections, resulting in increased accuracy. To get started, simply navigate to Settings, select Budgeting Preferences, and toggle on the Smart Categories option. We value your feedback and are always working to improve our product. Thank you for being a valued member of our community.\n\nBest,\nThe Team\n\nany feedback?",
+      "goal": "The person is sending this launch email to users of a budgeting app, many of whom are not technical. They want it clearer and shorter, with less jargon, so more people turn the feature on.",
+      "details": { "audience": "everyday users of our budgeting app, many of them not technical" }
+    },
+    {
+      "id": "paste-scholarship",
+      "tip": "paste-no-ask",
+      "prompt": "Growing up, I was the person my parents relied on to read letters from the bank, fill out school forms and translate at doctor's appointments. Neither of them went to college, and at first I did not think of that as unusual. It was only in high school, when my friends talked about their parents helping them with applications, that I realized I was figuring things out on my own. That experience taught me to be resourceful. I learned to ask questions, to look for help, and to keep going when something did not make sense. I want to study nursing because I have seen how confusing the healthcare system can be for families like mine, and I want to be the person who explains things clearly and patiently. This scholarship would allow me to focus on my studies instead of working two part-time jobs.\n\nis this good?",
+      "goal": "The person is submitting this essay to a scholarship committee for first-generation college students. They want to know if it's strong enough to win and what specific changes would make it more memorable, within the 250-word limit.",
+      "details": { "audience": "a scholarship committee for first-generation college students (250-word limit)" }
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "about": "Coaching-quality eval, dev set: used to look for weak add-ons and to tune them. Numbers on this set are not the honest ones; evals/quality/heldout.json is. Written 2026-11-24 by the Wisp team (an AI agent), not by users.",
+  "cases": [
+    {
+      "id": "build-club-site",
+      "tip": "vague-build",
+      "prompt": "build a website for my chess club",
+      "goal": "The person runs a 25-member high-school chess club and knows basic HTML. They want a simple site with the meeting schedule, a sign-up form that emails them, and a page of member ratings they can update by editing one file. Free hosting."
+    },
+    {
+      "id": "build-budget-tool",
+      "tip": "vague-build",
+      "prompt": "make a budgeting tool",
+      "goal": "The person is a college student who wants a Google Sheets template (not an app) to track monthly income from two part-time jobs, fixed costs and spending by category, with a warning when a category goes over its limit."
+    },
+    {
+      "id": "fix-css-center",
+      "tip": "vague-fix",
+      "history": [
+        { "role": "user", "text": "How do I center a div horizontally and vertically on the page?" },
+        { "role": "model", "text": "Use flexbox on the parent:\n```css\n.parent { display: flex; justify-content: center; align-items: center; }\n```" }
+      ],
+      "prompt": "it's still not working",
+      "goal": "The person put the CSS on the div's parent, which is the body. The div is centered horizontally but sits at the top of the page, because the body is only as tall as its content. They want it in the middle of the screen.",
+      "details": {
+        "error": "no error, the box is centered left to right but stays stuck at the top of the page",
+        "expected": "the box in the exact middle of the screen",
+        "actual": "it's centered left to right but stuck at the top"
+      }
+    },
+    {
+      "id": "fix-sql-count",
+      "tip": "vague-fix",
+      "history": [
+        { "role": "user", "text": "SQL: count how many orders each customer has, including customers with zero orders. Tables: customers(id, name), orders(id, customer_id)." },
+        { "role": "model", "text": "```sql\nSELECT c.name, COUNT(*) AS orders\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nGROUP BY c.name;\n```" }
+      ],
+      "prompt": "that's wrong, fix it",
+      "goal": "Customers with no orders show a count of 1 instead of 0. Also two different customers named 'Alex Kim' got merged into one row. The person wants correct counts per customer.",
+      "details": {
+        "error": "customers with no orders show 1 instead of 0, and two customers both named Alex Kim got combined into one row",
+        "expected": "0 for customers with no orders and one row per customer",
+        "actual": "1 for customers with no orders and the two Alex Kims merged"
+      }
+    },
+    {
+      "id": "facts-screen-time",
+      "tip": "facts-no-sources",
+      "prompt": "how many hours a day do teenagers spend on their phones",
+      "goal": "The person is a parent writing a short op-ed for the school newsletter and wants a reliable number with a named source, and to know whether it counts schoolwork."
+    },
+    {
+      "id": "facts-coffee-history",
+      "tip": "facts-no-sources",
+      "prompt": "when did coffee first come to europe",
+      "goal": "The person is writing a history paper and needs dates they can cite, and wants to know which parts are legend and which are documented."
+    },
+    {
+      "id": "style-instagram-caption",
+      "tip": "no-example",
+      "prompt": "write an instagram caption for my new pottery shop",
+      "goal": "The person opened a small pottery studio shop. They want a caption in their dry, understated voice, under 40 words, no exclamation marks, announcing Saturday's opening.",
+      "details": {
+        "example": "\"Made 40 mugs this week. Kept 3. The rest are on the shelf if you need somewhere to put your coffee.\"",
+        "words": "40"
+      }
+    },
+    {
+      "id": "style-bio",
+      "tip": "no-example",
+      "prompt": "write a bio for my portfolio website",
+      "goal": "The person is a junior UX designer. They want a short first-person bio, about 60 words, plain and specific (what they design, one project, what they're looking for), not salesy.",
+      "details": {
+        "example": "\"I design forms people don't hate. Lately that's been a benefits sign-up flow for a city agency that cut drop-off in half.\"",
+        "words": "60"
+      }
+    },
+    {
+      "id": "paste-club-newsletter",
+      "tip": "paste-no-ask",
+      "prompt": "Hello everyone and welcome back to another semester of the Hiking Club! We have so many exciting things planned for this semester and we cannot wait to share them with you all. First of all, we want to thank everyone who came out to our welcome event last week, it was so great to see so many new faces. As a reminder, our first hike of the semester will be this Saturday at Bear Mountain. We will be meeting at the main gate at 8am, and the bus will leave at 8:15 sharp, so please do not be late. Please bring water, snacks, sturdy shoes and a rain jacket, since the forecast says it might rain in the afternoon. If you have not yet paid your dues, you can do so at the meeting on Thursday. We also are still looking for two more officers, so if you are interested let us know. See you on the trail!\n\nthoughts?",
+      "goal": "The person is sending this to 80 club members by email. Most people skim on their phones, so they want the time, meeting place and what to bring to be impossible to miss.",
+      "details": { "audience": "80 college hiking club members who mostly read email on their phones" }
+    },
+    {
+      "id": "paste-intro-paragraph",
+      "tip": "paste-no-ask",
+      "prompt": "Social media has had a significant impact on modern society in many different ways. In today's world, almost everyone uses some form of social media on a daily basis, whether it is Instagram, TikTok, Twitter or Facebook. Some people believe that social media has had a positive impact, because it allows people to stay connected with friends and family and to access information quickly. However, others argue that social media has had a negative impact, because it can lead to addiction, anxiety and the spread of misinformation. In this essay, I will discuss both the positive and negative effects of social media and explain why I believe that, overall, the negative effects outweigh the positive ones, especially for teenagers who are still developing their sense of identity and self-worth.\n\nwhat do you think?",
+      "goal": "This is the intro to a persuasive essay for a college writing class. The professor said the intro was generic. The person wants a sharper hook and a clearer, arguable thesis.",
+      "details": { "audience": "a college writing professor who said my last intro was too generic" }
+    }
+  ]
+}
