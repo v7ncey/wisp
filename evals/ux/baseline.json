@@ -1,0 +1,142 @@
+{
+  "label": "baseline",
+  "date": "2026-11-24T07:23:23.678Z",
+  "command": "npm run eval:ux -- --label baseline",
+  "target": "local build of this commit (scripts/serve.ts)",
+  "commit": "43caaa7",
+  "uncommittedChanges": "no",
+  "lighthouse": {
+    "mobile": {
+      "performance": 100,
+      "accessibility": 96,
+      "bestPractices": 100,
+      "seo": 100,
+      "failedAccessibilityAudits": [
+        "color-contrast"
+      ],
+      "lcpMs": 1429,
+      "cls": 0
+    },
+    "desktop": {
+      "performance": 100,
+      "accessibility": 96,
+      "bestPractices": 100,
+      "seo": 100,
+      "failedAccessibilityAudits": [
+        "color-contrast"
+      ],
+      "lcpMs": 345,
+      "cls": 0
+    }
+  },
+  "axe": {
+    "light": {
+      "loaded": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 11,
+          "targets": [
+            "[\"a[href$=\\\"#extension\\\"]\"]",
+            "[\"a[href$=\\\"wisp\\\"]\"]",
+            "[\"button[type=\\\"button\\\"]:nth-child(1)\"]",
+            "[\"#scenarios > button[type=\\\"button\\\"]:nth-child(2)\"]"
+          ]
+        }
+      ],
+      "tipOpen": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 11,
+          "targets": [
+            "[\"a[href$=\\\"#extension\\\"]\"]",
+            "[\"a[href$=\\\"wisp\\\"]\"]",
+            "[\"button[type=\\\"button\\\"]:nth-child(1)\"]",
+            "[\"#scenarios > button[type=\\\"button\\\"]:nth-child(2)\"]"
+          ]
+        }
+      ],
+      "statsPanel": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 11,
+          "targets": [
+            "[\"a[href$=\\\"#extension\\\"]\"]",
+            "[\"a[href$=\\\"wisp\\\"]\"]",
+            "[\"button[type=\\\"button\\\"]:nth-child(1)\"]",
+            "[\"#scenarios > button[type=\\\"button\\\"]:nth-child(2)\"]"
+          ]
+        }
+      ]
+    },
+    "dark": {
+      "loaded": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 1,
+          "targets": [
+            "[\"#send\"]"
+          ]
+        }
+      ],
+      "tipOpen": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 1,
+          "targets": [
+            "[\"#send\"]"
+          ]
+        }
+      ],
+      "statsPanel": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": 1,
+          "targets": [
+            "[\"#send\"]"
+          ]
+        }
+      ]
+    },
+    "failingElements": {
+      "light": {
+        "loaded": 11,
+        "tipOpen": 11,
+        "statsPanel": 11
+      },
+      "dark": {
+        "loaded": 1,
+        "tipOpen": 1,
+        "statsPanel": 1
+      }
+    }
+  },
+  "timeToFirstTipMs": {
+    "runs": [
+      2327,
+      2348,
+      2340
+    ],
+    "median": 2340
+  },
+  "keyboardTask": {
+    "success": true,
+    "reason": null,
+    "tabsToBox": 8,
+    "tabsToAddOn": 3
+  },
+  "phoneTip": {
+    "top": -160,
+    "bottom": 81,
+    "left": 21,
+    "right": 361,
+    "vw": 390,
+    "vh": 844,
+    "insideViewport": false
+  }
+}

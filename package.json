@@ -11,13 +11,16 @@
     "eval": "tsx scripts/eval.ts",
     "eval:gemini": "tsx --env-file-if-exists=.env.local scripts/eval-gemini.ts",
     "eval:quality": "tsx --env-file-if-exists=.env.local scripts/eval-quality.ts",
-    "eval:extension": "npm run build && tsx scripts/eval-extension.ts"
+    "eval:extension": "npm run build && tsx scripts/eval-extension.ts",
+    "eval:ux": "tsx scripts/eval-ux.ts"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",
     "@types/node": "^22.20.5",
+    "axe-core": "^4.14.1",
     "esbuild": "^0.24.2",
     "fflate": "^0.8.2",
+    "lighthouse": "^12.8.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
