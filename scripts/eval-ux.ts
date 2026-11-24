@@ -80,8 +80,15 @@ async function newPage(browser: Any, url: string, opts: Any = {}) {
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: "load" });
   // Personalization off so timings don't depend on Gemini.
-  const toggle = page.locator("#ai-toggle");
-  if (await toggle.isChecked()) await toggle.uncheck();
+  // Done in the page, not with a click, so the browser doesn't scroll down to the checkbox.
+  await page.evaluate(() => {
+    const t = document.querySelector<HTMLInputElement>("#ai-toggle")!;
+    if (t.checked) {
+      t.checked = false;
+      t.dispatchEvent(new Event("change"));
+    }
+    scrollTo(0, 0);
+  });
   return page;
 }
 
@@ -167,7 +174,7 @@ async function phoneTip(browser: Any, url: string) {
   await sleep(400);
   const r = await page.evaluate(() => {
     const b = document.querySelector("#wisp-host")!.shadowRoot!.querySelector(".bubble")!.getBoundingClientRect();
-    return { top: Math.round(b.top), bottom: Math.round(b.bottom), left: Math.round(b.left), right: Math.round(b.right), vw: innerWidth, vh: innerHeight };
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), left: Math.round(b.left), right: Math.round(b.right), vw: innerWidth, vh: innerHeight, scrollY: Math.round(scrollY) };
   });
   await page.close();
   return { ...r, insideViewport: r.top >= 0 && r.left >= 0 && r.bottom <= r.vh && r.right <= r.vw };
