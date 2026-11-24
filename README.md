@@ -10,7 +10,7 @@ Wisp is for people who are new to AI. When you pause typing a prompt, it checks 
 
 | Habit | What Wisp suggests |
 |---|---|
-| A vague "build me X" | Ask the AI for clarifying questions and a plan first |
+| A vague "build me X" | Ask the AI a few questions about what matters, then build |
 | A long paste plus "thoughts?" | Say what kind of feedback you want and who it's for |
 | "Fix it" with no details | Paste the exact error, or say what you expected |
 | Asking for facts or numbers | Ask for sources and for it to flag uncertainty |
@@ -59,6 +59,38 @@ Gemini over-flags "vague project", for example on "what should I name my startup
 
 What it changed: the rules stay in charge of *when* Wisp speaks, which is also free, instant and works offline. Gemini is used only to reword a tip that already fired. The dev-set comparison is in the JSON too, but the rules were tuned on that set, so it isn't a fair contest.
 
+## Do the tips actually help? (coaching-quality eval)
+
+Spotting a habit correctly is only half the job. The other half is whether following the tip gets a better answer. `npm run eval:quality` checks that:
+
+1. Each case in `evals/quality/heldout.json` (15 cases, 3 per draft tip) is a draft Wisp's rules flag, the goal the person really had, and the details they'd type into an add-on's blanks.
+2. The draft is answered twice by Gemini Flash-Lite, standing in for ChatGPT or Claude: once as typed, and once with every add-on of the tip applied and filled in.
+3. For "Let it ask before it builds", whose add-ons make the AI ask questions first, a simulated person who knows the goal replies once, and the AI answers again. Both sides get the same number of turns.
+4. A judge sees only the goal and the two final replies, never the prompts. It scores them on a fixed rubric (fit, wrong assumptions, actionability, trust) and picks one. It runs twice with the order swapped, and a win counts only if both orders agree.
+
+Results from 2026-11-24, held-out set, after the one change described below (`evals/quality/heldout-after.json`):
+
+| Tip | Better with tip | Same | Worse |
+|---|---|---|---|
+| Show it what went wrong | 2 | 0 | 1 |
+| Ask for sources | 2 | 1 | 0 |
+| Show an example | 2 | 1 | 0 |
+| Say what feedback you want | 2 | 1 | 0 |
+| Let it ask before it builds | 0 | 1 | 2 |
+| **All 15** | **8** | **4** | **3** |
+
+The judge's average score went from 3.71 to 4.03 out of 5 (paired difference +0.33, standard error 0.30). Before the change (`heldout-baseline.json`) it was 9 better, 4 same, 2 worse.
+
+What changed: on the dev set (`evals/quality/dev.json`, 10 cases), the old second add-on of "Let it ask before it builds", "show me a plan and wait for my OK", made the AI stop at a plan and ask permission after its questions were answered. It lost both dev cases. A first rewrite (`dev-after-try1.json`) fixed the stall, but the AI then asked shallow questions such as currency and color scheme, and it still lost. The second rewrite steers the questions toward what changes the build and then builds right away. It went 1-1 on dev, so it shipped, and the held-out set was scored once. There it went 0 wins, 1 tie, 2 losses (before: 1-1-1). Those losses come from things outside the tip: a bug in generated code, raw HTML handed to someone who can't code, and long replies cut off at the length limit. So this eval can't show that the tip helps, and it stays a hypothesis. The other four tips were better in 8 of their 12 held-out cases and worse in 1.
+
+Caveats, read before quoting any of this:
+- Gemini stands in for ChatGPT and Claude, and the judge is also Gemini. The plan was Gemini Flash as the judge, but on run day it was overloaded and Pro had no free quota. So the judge is Flash-Lite with "high" thinking, while the assistant runs with no thinking. Same-family judging can't be ruled out as a bias, though both replies come from the same model.
+- The cases were written by the builder (with an AI agent), not by users. 15 held-out cases can only show large effects.
+- Judges tend to favor longer replies. With "Ask for sources" the replies were about 4 times longer, so part of that win may be length. Each results file records reply lengths.
+- Asking for sources without web search can produce made-up citations, and this judge can't check links.
+
+Re-run it: put `GEMINI_API_KEY` in `.env.local` and run `npm run eval:quality -- --set heldout --label baseline`. To reuse the "as typed" replies from an earlier run, add `--reuse evals/quality/heldout-baseline.json`. Use `--judge-model gemini-flash-latest` once Flash isn't overloaded. One full held-out run is about 75 model calls. Without a key, the script can call the deployed `/api/eval` instead, which is closed unless the server has `WISP_EVAL_TOKEN` set and the caller sends it.
+
 ## Project layout
 
 ```
@@ -66,8 +98,9 @@ src/core/       detectors, tip library, coach engine, memory (shared)
 src/ui/         Wisp's pop-up (shadow DOM) and the controller that wires it to a text box
 src/demo/       the demo page
 src/extension/  Chrome extension: per-site selectors, content script, background worker
-src/server/     Gemini calls and the /api/coach handler
-api/coach.ts    Vercel function
+src/server/     Gemini calls, the /api/coach handler, and the coaching-quality eval steps
+api/coach.ts    Vercel function (public)
+api/eval.ts     Vercel function for the eval (closed without WISP_EVAL_TOKEN)
 evals/          labeled prompts and results
 ```
 
@@ -77,6 +110,7 @@ evals/          labeled prompts and results
 npm install
 npm test          # unit tests (Node's built-in runner)
 npm run eval      # detector precision/recall
+npm run eval:quality -- --set heldout --label baseline   # do the tips improve answers? (needs a Gemini key)
 npm run build     # bundles demo + extension, zips the extension into public/
 npx tsx scripts/serve.ts   # local demo on http://localhost:5178
 ```

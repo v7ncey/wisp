@@ -8,6 +8,7 @@ import { selectFirstBlank } from "../ui/blanks";
 import { appendAddOn } from "../core/apply";
 import results from "../../evals/results.json";
 import geminiComparison from "../../evals/gemini-comparison.json";
+import quality from "../../evals/quality/heldout-after.summary.json";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const draftEl = $<HTMLTextAreaElement>("#draft");
@@ -245,3 +246,23 @@ $("#eval-quiet").textContent = `Stayed quiet when it should have: ${heldout.quie
 const gh = geminiComparison.heldout;
 $("#eval-gemini").textContent =
   `Could Gemini spot these habits instead of rules? On the same ${gh.scoredOn} held-out prompts, Gemini made ${gh.gemini.mistakes.length} mistakes to the rules' ${gh.rules.mistakes.length} and stayed quiet correctly ${gh.gemini.quiet.correct} of ${gh.gemini.quiet.total} times. It mostly over-flagged "vague project". So the rules decide when Wisp speaks, and Gemini only rewords the tip.`;
+
+// Coaching quality: did following the tip get a better AI reply? (npm run eval:quality)
+const TIP_NAMES: Record<string, string> = {
+  "vague-fix": "Show it what went wrong",
+  "facts-no-sources": "Ask for sources",
+  "no-example": "Show an example",
+  "paste-no-ask": "Say what feedback you want",
+  "vague-build": "Let it ask before it builds",
+};
+const qs = quality.summary;
+$("#q-caption").textContent =
+  `${qs.n} held-out drafts that Wisp flags, each answered as typed and with the tip's add-ons, then judged blind by a second AI on what the person actually wanted. With the tip, the reply was better in ${qs.wins}, the same in ${qs.ties} and worse in ${qs.losses} (${quality.runAt.slice(0, 10)}).`;
+const perTip = quality.perTip as Record<string, { wins: number; ties: number; losses: number }>;
+$("#q-body").innerHTML = Object.keys(TIP_NAMES)
+  .filter((id) => perTip[id])
+  .map((id) => [id, perTip[id]] as const)
+  .map(([id, t]) => `<tr><td>${TIP_NAMES[id] ?? id}</td><td>${t.wins}</td><td>${t.ties}</td><td>${t.losses}</td></tr>`)
+  .join("");
+$("#q-note").textContent =
+  "\"Let it ask before it builds\" didn't help here, even after a rewrite, so that one is still a hypothesis. Gemini stands in for ChatGPT and Claude, an AI is the judge, and the drafts were written by the builder, not by users: a check, not proof.";
