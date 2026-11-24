@@ -185,10 +185,10 @@ async function phoneComposer(browser: Any, url: string) {
   const page = await newPage(browser, url, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const r = await page.$eval("#draft", (el: Element) => {
     const b = el.getBoundingClientRect();
-    return { top: Math.round(b.top), bottom: Math.round(b.bottom), vh: innerHeight };
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), vh: innerHeight, pageWidth: document.documentElement.scrollWidth, vw: innerWidth };
   });
   await page.close();
-  return { ...r, onFirstScreen: r.bottom <= r.vh };
+  return { ...r, onFirstScreen: r.bottom <= r.vh, noSidewaysScroll: r.pageWidth <= r.vw };
 }
 
 /** Phone with the keyboard up (simulated as a 390x450 viewport): is the open tip fully visible? */

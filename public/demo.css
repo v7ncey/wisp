@@ -1,10 +1,10 @@
 :root {
   --bg: #f5f7fb; --card: #ffffff; --fg: #1d2333; --muted: #5d6680; --line: #e3e7f0;
-  --accent: #2f6bea; --accent-soft: #eef4ff; --me: #2f6bea; --me-fg: #fff; --them: #eef1f7;
+  --accent: #2558d6; --accent-soft: #eef4ff; --me: #2f6bea; --me-fg: #fff; --them: #eef1f7; --field-line: #848da3;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #11141d; --card: #181c28; --fg: #e8ecf5; --muted: #a3acc2; --line: #2a3146; --accent: #6f9dff; --accent-soft: #1f2a45; --me: #3b6fe0; --them: #232a3c; color-scheme: dark; }
+  :root { --bg: #11141d; --card: #181c28; --fg: #e8ecf5; --muted: #a3acc2; --line: #2a3146; --accent: #6f9dff; --accent-soft: #1f2a45; --me: #3b6fe0; --them: #232a3c; --field-line: #5a6482; color-scheme: dark; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -16,11 +16,12 @@ h1 { margin: 0; font-size: 24px; }
 .tag { margin: 0; color: var(--muted); }
 nav { display: flex; gap: 16px; }
 main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; padding: 16px 24px 24px; max-width: 1180px; margin: 0 auto; }
-@media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 12px 16px; } .top { padding: 16px 16px 4px; } }
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); padding: 12px 16px; } main > * { min-width: 0; } .top { padding: 16px 16px 4px; } }
 
 .chat-card { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; min-height: 560px; height: calc(100vh - 140px); max-height: 760px; }
 @media (max-width: 900px) {
-  .chat-card { height: 560px; min-height: 0; }
+  /* Shorter card and one swipeable row of scenarios, so the message box is on a phone's first screen. */
+  .chat-card { height: 400px; min-height: 0; }
   main > .side { display: contents; }
   #scenario-card { order: -1; }
 }
@@ -32,10 +33,11 @@ main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; pa
 .messages .them { align-self: flex-start; background: var(--them); border-bottom-left-radius: 4px; }
 .messages .empty, .messages .note { align-self: center; color: var(--muted); font-size: 13px; text-align: center; max-width: 90%; }
 .composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
-textarea { flex: 1; resize: none; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+textarea { flex: 1; resize: none; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--field-line); border-radius: 12px; padding: 10px 12px; }
+textarea::placeholder { color: var(--muted); opacity: 1; }
 textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 button { font: inherit; cursor: pointer; }
-#send { background: var(--accent); color: #fff; border: 0; border-radius: 12px; padding: 0 18px; }
+#send { background: var(--me); color: #fff; border: 0; border-radius: 12px; padding: 0 18px; }
 .ghost { background: none; border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 4px 10px; }
 .link { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 0; font-size: 13px; }
 
@@ -58,3 +60,16 @@ button { font: inherit; cursor: pointer; }
 .steps { padding-left: 20px; margin: 8px 0; }
 code { background: var(--them); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
 .foot { max-width: 1180px; margin: 0 auto; padding: 0 24px 32px; color: var(--muted); font-size: 13px; }
+
+/* First run: the empty chat introduces Wisp and offers one click to see it work. */
+.messages .intro { white-space: normal; align-self: stretch; max-width: none; text-align: left; color: var(--fg); background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; }
+.messages .intro p { margin: 0 0 8px; }
+.messages .intro .fine { margin: 8px 0 0; }
+.show-me { background: var(--me); color: var(--me-fg); border: 0; border-radius: 10px; padding: 7px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+.show-me:focus-visible, .scenarios button:focus-visible, #send:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Phones: one swipeable row of scenarios (after the base .scenarios rule so it wins). */
+@media (max-width: 900px) {
+  .scenarios { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .scenarios button { flex: none; }
+}

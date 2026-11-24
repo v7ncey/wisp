@@ -53,17 +53,28 @@ export class WispUI {
   private peekTimer: number | undefined;
   private panelProvider: (() => Promise<PanelInfo>) | null = null;
   private noticeOpen = false;
+  private handlers: ShowHandlers | null = null;
+  private status: HTMLDivElement;
+  private mode: "fixed" | "contained";
 
   constructor(host: HTMLElement, opts: { mode: "fixed" | "contained" }) {
+    this.mode = opts.mode;
     this.root = host.attachShadow({ mode: "open" });
     this.root.innerHTML = `<style>${WISP_CSS}</style>
       <div class="wisp ${opts.mode}" data-state="idle">
-        <div class="bubble" role="dialog" aria-live="polite" aria-label="Wisp tip"></div>
+        <div class="bubble" role="region" aria-label="Wisp tip"></div>
         <button class="orb-btn" type="button" aria-label="Wisp: open stats and settings" title="Wisp">${AVATAR}</button>
+        <div class="sr" role="status"></div>
       </div>`;
     this.wrap = this.root.querySelector(".wisp")!;
     this.bubble = this.root.querySelector(".bubble")!;
+    this.status = this.root.querySelector('[role="status"]')!;
     this.root.querySelector(".orb-btn")!.addEventListener("click", () => this.toggleOrb());
+    // Escape inside the tip closes it, like "Got it".
+    this.bubble.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.dismiss();
+    });
+    window.visualViewport?.addEventListener("resize", () => this.fit());
   }
 
   /** What the orb shows when clicked with no tip open. */
@@ -87,8 +98,45 @@ export class WispUI {
     this.render(s, h, opts.personalizing ? { state: "loading" } : { state: "built-in" });
     this.wrap.dataset.state = "peek";
     this.peekTimer = window.setTimeout(() => {
-      if (this.current === s) this.wrap.dataset.state = "open";
+      if (this.current !== s) return;
+      this.wrap.dataset.state = "open";
+      this.fit();
+      // Said once, after the tip is visible, so screen readers announce it without moving focus.
+      this.status.textContent = `Wisp tip: ${s.title}. Its buttons come after the message box.`;
     }, opts.peekMs ?? 900);
+  }
+
+  /** Closes the open tip as if "Got it" was pressed. Returns false if no tip was open. */
+  dismiss(): boolean {
+    if (!this.current || !this.handlers) return false;
+    this.handlers.onDismiss();
+    this.hide();
+    return true;
+  }
+
+  /** Keeps the bubble inside the visible screen (e.g. above a phone keyboard): it scrolls inside instead. */
+  private fit() {
+    if (this.wrap.dataset.state !== "open") return;
+    this.bubble.style.maxHeight = "";
+    const vv = window.visualViewport;
+    const viewTop = vv?.offsetTop ?? 0;
+    const viewBottom = viewTop + (vv?.height ?? window.innerHeight);
+    let rect = this.bubble.getBoundingClientRect();
+    // On a page (the demo), scroll just enough to show the whole tip, as long as the box it's
+    // anchored to stays on screen. In the extension the pop-up is fixed to the screen, so skip.
+    const deficit = viewTop + 8 - rect.top;
+    if (this.mode === "contained" && deficit > 0) {
+      const anchorBottom = (this.root.host as HTMLElement).getBoundingClientRect().bottom;
+      const slack = Math.max(0, viewBottom - anchorBottom);
+      const by = Math.min(deficit, slack);
+      if (by > 0) {
+        window.scrollBy(0, -by);
+        rect = this.bubble.getBoundingClientRect();
+      }
+    }
+    // Whatever still doesn't fit scrolls inside the tip instead of off the top of the screen.
+    const room = rect.bottom - viewTop - 8;
+    this.bubble.style.maxHeight = `${Math.max(140, Math.min(520, room))}px`;
   }
 
   /** Apply the result of AI personalization to the tip that's showing. */
@@ -103,6 +151,8 @@ export class WispUI {
 
   hide() {
     clearTimeout(this.peekTimer);
+    this.status.textContent = "";
+    this.handlers = null;
     this.current = null;
     this.wrap.dataset.state = "idle";
   }
@@ -209,6 +259,7 @@ export class WispUI {
             ? `<span class="src">${esc(FALLBACK_LABEL[label.reason] ?? FALLBACK_LABEL.error)}</span>`
             : `<span class="src">Built-in tip</span>`;
 
+    this.handlers = h;
     this.bubble.innerHTML = `
       <header><strong>${esc(s.title)}</strong><button class="x" aria-label="Dismiss tip">×</button></header>
       ${s.seenBefore ? `<p class="seen">${esc(s.seenBefore.line)}</p>` : ""}

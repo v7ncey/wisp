@@ -13,7 +13,7 @@ export const WISP_CSS = `
   .wisp { --bg: #1b2030; --fg: #e8ecf5; --muted: #a3acc2; --line: #2f3750; --chip: #23304f; --chip-fg: #a9c6ff; --ai: #c9a2ff; --shadow: 0 12px 32px rgba(0,0,0,.5); }
 }
 .wisp.fixed { position: fixed; right: 18px; bottom: 96px; }
-.wisp.contained { position: absolute; right: 12px; bottom: 76px; }
+.wisp.contained { position: absolute; right: 12px; bottom: 120px; }
 .orb-btn {
   pointer-events: auto; border: 0; background: none; padding: 0; cursor: pointer;
   width: 52px; height: 52px; border-radius: 50%;
@@ -49,7 +49,7 @@ p { margin: 6px 0; }
   padding: 5px 10px; border-radius: 999px; cursor: pointer; text-align: left;
 }
 .chip:hover:not(:disabled) { border-color: var(--chip-fg); }
-.chip:disabled { opacity: .6; cursor: default; }
+.chip:disabled { opacity: 1; background: transparent; border-color: var(--line); color: var(--muted); cursor: default; }
 .chip.ai { color: var(--ai); }
 .chip small { font-size: 10px; opacity: .8; margin-left: 4px; }
 .features { margin: 8px 0 4px; padding-left: 18px; font-size: 13px; }
@@ -71,4 +71,5 @@ button.got { font: inherit; font-size: 13px; border: 0; background: #2f6bea; col
 .stats dd { margin: 0; font-size: 18px; font-weight: 600; }
 .toggle { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
 .toast { margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 `;

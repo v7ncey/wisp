@@ -20,6 +20,12 @@ export interface ControllerDeps {
   personalize?: (draft: string, s: Suggestion) => Promise<PersonalizeOutcome>;
   /** How long the user must stop typing before Wisp looks. */
   pauseMs?: number;
+  /**
+   * Called when Wisp looked at a draft and chose not to speak: "clear" (no tip applies) or "waiting"
+   * (a tip applies but Wisp is holding off). The demo uses it so silence doesn't look broken;
+   * the extension leaves it unset and stays quiet.
+   */
+  onQuiet?: (why: "clear" | "waiting") => void;
 }
 
 /** Glue between a text box, the coach and the pop-up. Shared by the demo page and the extension. */
@@ -30,6 +36,7 @@ export class WispController {
   /** An add-on with a "___" blank went into this draft; remind once if it's still unfilled. */
   private blankInserted = false;
   private blankReminded = false;
+  private lastQuietDraft = "";
 
   constructor(private d: ControllerDeps) {
     this.pauseMs = d.pauseMs ?? 1500;
@@ -65,7 +72,15 @@ export class WispController {
     const force = this.forceNext;
     this.forceNext = false;
     const s = await this.d.coach.check(draft, this.d.context(), { force });
-    if (!s) return;
+    if (!s) {
+      // Say so once per draft, and only if the page asked to hear about it.
+      if (this.d.onQuiet && draft.trim() !== this.lastQuietDraft) {
+        this.lastQuietDraft = draft.trim();
+        const pending = (await this.d.coach.candidates(draft, this.d.context())).length > 0;
+        this.d.onQuiet(pending ? "waiting" : "clear");
+      }
+      return;
+    }
 
     const handlers = {
       onChip: (chip: { insert: string }, _ai: boolean) => {

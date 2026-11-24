@@ -44,6 +44,13 @@ const controller = new WispController({
   },
   personalize: aiToggle.checked ? personalize : undefined,
   pauseMs: 1200,
+  onQuiet: (why) =>
+    ui.toast(
+      why === "clear"
+        ? "Looks clear to me. I only speak up when a tip would change the answer. Try a scenario to see one."
+        : "I've already given a tip on this, so I'm staying quiet for now.",
+      5000,
+    ),
 });
 
 aiToggle.addEventListener("change", () => controller.setPersonalize(aiToggle.checked ? personalize : undefined));
@@ -90,6 +97,10 @@ $<HTMLFormElement>("#composer").addEventListener("submit", (e) => {
   void send(draftEl.value);
 });
 draftEl.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && ui.dismiss()) {
+    e.preventDefault();
+    return;
+  }
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     void send(draftEl.value);
@@ -186,11 +197,12 @@ const SCENARIOS: Array<[string, () => Promise<void>]> = [
   ],
 ];
 
+// The buttons are in the HTML (so the page doesn't shift when this script loads); attach each one's scenario.
 const scenariosEl = $("#scenarios");
+const scenarioButtons = [...scenariosEl.querySelectorAll<HTMLButtonElement>("button")];
 for (const [label, run] of SCENARIOS) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.textContent = label;
+  const b = scenarioButtons.find((x) => x.textContent?.trim() === label);
+  if (!b) throw new Error(`Scenario button missing from index.html: ${label}`);
   b.addEventListener("click", async () => {
     scenariosEl.querySelectorAll("button").forEach((x) => (x.disabled = true));
     try {
@@ -199,7 +211,6 @@ for (const [label, run] of SCENARIOS) {
       scenariosEl.querySelectorAll("button").forEach((x) => (x.disabled = false));
     }
   });
-  scenariosEl.append(b);
 }
 
 /* ---------- Stats + evals ---------- */
@@ -232,13 +243,20 @@ async function resetMemory() {
 }
 $("#reset").addEventListener("click", resetMemory);
 
+const TIP_NAMES: Record<string, string> = {
+  "vague-fix": "Show it what went wrong",
+  "facts-no-sources": "Ask for sources",
+  "no-example": "Show an example",
+  "paste-no-ask": "Say what feedback you want",
+  "vague-build": "Let it ask before it builds",
+};
 const pct = (n: number | null) => (n === null ? "n/a" : `${Math.round(n * 100)}%`);
 const heldout = results.heldout;
 const dev = results.dev;
 $("#eval-caption").textContent =
   `Scored on ${heldout.total} held-out prompts I wrote after freezing the rules (${results.runAt}). I wrote them myself, so treat this as a sanity check, not proof. On the ${dev.total} prompts I tuned against, it looks better, which is exactly why the held-out number is the one to trust.`;
 $("#eval-body").innerHTML = heldout.perDetector
-  .map((d) => `<tr><td>${d.id}</td><td>${pct(d.precision)}</td><td>${pct(d.recall)}</td></tr>`)
+  .map((d) => `<tr><td>${TIP_NAMES[d.id] ?? d.id}</td><td>${pct(d.precision)}</td><td>${pct(d.recall)}</td></tr>`)
   .join("");
 $("#eval-quiet").textContent = `Stayed quiet when it should have: ${heldout.quiet.correct} of ${heldout.quiet.total} held-out prompts.`;
 
@@ -248,13 +266,6 @@ $("#eval-gemini").textContent =
   `Could Gemini spot these habits instead of rules? On the same ${gh.scoredOn} held-out prompts, Gemini made ${gh.gemini.mistakes.length} mistakes to the rules' ${gh.rules.mistakes.length} and stayed quiet correctly ${gh.gemini.quiet.correct} of ${gh.gemini.quiet.total} times. It mostly over-flagged "vague project". So the rules decide when Wisp speaks, and Gemini only rewords the tip.`;
 
 // Coaching quality: did following the tip get a better AI reply? (npm run eval:quality)
-const TIP_NAMES: Record<string, string> = {
-  "vague-fix": "Show it what went wrong",
-  "facts-no-sources": "Ask for sources",
-  "no-example": "Show an example",
-  "paste-no-ask": "Say what feedback you want",
-  "vague-build": "Let it ask before it builds",
-};
 const qs = quality.summary;
 $("#q-caption").textContent =
   `${qs.n} held-out drafts that Wisp flags, each answered as typed and with the tip's add-ons, then judged blind by a second AI on what the person actually wanted. With the tip, the reply was better in ${qs.wins}, the same in ${qs.ties} and worse in ${qs.losses} (${quality.runAt.slice(0, 10)}).`;
@@ -266,3 +277,8 @@ $("#q-body").innerHTML = Object.keys(TIP_NAMES)
   .join("");
 $("#q-note").textContent =
   "\"Let it ask before it builds\" didn't help here, even after a rewrite, so that one is still a hypothesis. Gemini stands in for ChatGPT and Claude, an AI is the judge, and the drafts were written by the builder, not by users: a check, not proof.";
+
+// First run: the empty chat's "Show me" button runs the "Vague project" scenario.
+document.querySelector("#show-me")?.addEventListener("click", () => {
+  (scenariosEl.querySelector("button") as HTMLButtonElement | null)?.click();
+});

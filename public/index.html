@@ -28,12 +28,16 @@
       <div class="chat-head">
         <div>
           <strong id="chat-title">Practice chat</strong>
-          <span class="pill">Replies are canned. There's no real AI in this chat.</span>
+          <span class="pill">Replies are placeholders. Wisp is the real part.</span>
         </div>
         <button id="new-chat" class="ghost" type="button">New chat</button>
       </div>
       <ol id="messages" class="messages" aria-live="polite">
-        <li class="empty">Type a request the way you normally would, or pick a scenario. When you pause typing, Wisp checks your draft.</li>
+        <li class="empty intro">
+          <p><strong>Meet Wisp, the little ghost by the Send button.</strong> Pause while typing and it reads your draft, then suggests one fix you can click to add.</p>
+          <button id="show-me" class="show-me" type="button">Show me</button>
+          <p class="fine">Or type your own. Wisp stays quiet when a prompt is already clear.</p>
+        </li>
       </ol>
       <form id="composer" class="composer">
         <label for="draft" class="sr">Message</label>
@@ -47,16 +51,16 @@
       <section class="card" id="scenario-card">
         <h2>Try a scenario</h2>
         <p class="fine">Each one types a realistic prompt for you. Wisp's 3-minute quiet period is shortened to a few seconds on this page.</p>
-        <div id="scenarios" class="scenarios"></div>
+        <div id="scenarios" class="scenarios"><button type="button">Vague project</button><button type="button">“Fix it”</button><button type="button">Asking for stats</button><button type="button">Cover letter</button><button type="button">Pasted essay</button><button type="button">Same intro, new chat</button><button type="button">Same task, 3rd chat</button><button type="button">Very long chat</button></div>
       </section>
 
       <section class="card">
         <h2>Your stats</h2>
         <p class="fine">These counts and Wisp's memory stay in this browser.</p>
-        <dl id="stats" class="stats"></dl>
+        <dl id="stats" class="stats"><div><dt>Tips shown</dt><dd>0</dd></div><div><dt>Add-ons used</dt><dd>0</dd></div><div><dt>Dismissed</dt><dd>0</dd></div><div><dt>Did it yourself</dt><dd>0</dd></div></dl>
         <label class="toggle"><input id="ai-toggle" type="checkbox" checked /> Personalize tips with AI (Gemini)</label>
         <p class="fine" id="ai-note">When this is on, the draft that triggered a tip is sent to Google Gemini to tailor the wording. If the AI is down or busy, Wisp shows its built-in tip and says so.</p>
-        <button id="reset" class="link" type="button">Reset Wisp's memory</button>
+        <button id="reset" class="link" type="button">Forget everything Wisp remembers</button>
       </section>
 
       <section class="card" id="quality">
