@@ -119,7 +119,7 @@ To load the extension: run `npm run build`, open `chrome://extensions`, turn on 
 
 ## Known limits
 
-- The extension reads ChatGPT's and Claude's pages using CSS selectors (`src/extension/sites.ts`). When those sites change their layout, the selectors need updating.
+- The extension reads ChatGPT's and Claude's pages using CSS selectors (`src/extension/sites.ts`). When those stop matching, it falls back to generic signals (a `role=textbox` editor, a box labeled "message"/"prompt"/"ask", then the largest editable box near the bottom) and counts a send when the draft clears after Enter or a button click. If it still can't find the chat box for about 10 seconds, the orb says so once and links to GitHub issues; the stats panel shows whether Wisp is using the normal or the backup way. `npm run eval:extension -- --label <name>` checks this against 15 fixture pages in `tests/fixtures/sites` (5 documented shapes, 10 hypothetical) in headless Chromium; results are in `evals/extension/`. The fixtures are simplified mock-ups, not the real sites, so the selectors still need checking by hand after a site change.
 - The extension is not on the Chrome Web Store yet.
 - Plan availability for Projects, Skills and custom GPTs varies and changes, so Wisp's notes stay general. Each feature entry has a `lastChecked` date.
 - The server's rate limit is per instance and best-effort.

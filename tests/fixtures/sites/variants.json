@@ -1,0 +1,230 @@
+{
+  "note": "Fixture pages for scripts/eval-extension.ts. 'documented' variants model shapes recorded in this repo or in docs/research/2026-11-desk-research.md section 5; 'hypothetical' variants are invented, plausible future changes. Fixtures are simplified mock-ups, not copies of the real pages.",
+  "variants": [
+    {
+      "id": "chatgpt-2026-11-textarea",
+      "site": "chatgpt",
+      "status": "documented",
+      "file": "chatgpt-2026-11-textarea.html",
+      "path": "/",
+      "description": "ChatGPT today: plain textarea named prompt.",
+      "source": "src/extension/sites.ts and commit b587ed1 (checked by hand in Chrome on 2026-11-05): composer is <textarea name=prompt>, user messages [data-message-role=user], signed-out chats /uc/<id>.",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": null,
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-prosemirror",
+      "site": "chatgpt",
+      "status": "documented",
+      "file": "chatgpt-prosemirror.html",
+      "path": "/",
+      "description": "ChatGPT earlier: ProseMirror div#prompt-textarea, messages with data-message-author-role.",
+      "source": "sites.ts comment ('earlier a ProseMirror div with id prompt-textarea'), research 2026-11 section 5 [E4] (#prompt-textarea.ProseMirror); messages [data-message-author-role=user] from the previous sites.ts.",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "enter",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-testid-prompt-textarea",
+      "site": "chatgpt",
+      "status": "documented",
+      "file": "chatgpt-testid-prompt-textarea.html",
+      "path": "/",
+      "description": "Composer identified only by data-testid=prompt-textarea (no name, no id).",
+      "source": "Userscript fallback chains cited in research 2026-11 section 5 [E4]: [data-testid='prompt-textarea'].",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": null,
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-role-textbox",
+      "site": "chatgpt",
+      "status": "documented",
+      "file": "chatgpt-role-textbox.html",
+      "path": "/",
+      "description": "Composer is a contenteditable div with role=textbox, no id or ProseMirror class.",
+      "source": "Userscript fallback chains cited in research 2026-11 section 5 [E4]: div[contenteditable][role=textbox].",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "enter",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-textarea-renamed",
+      "site": "chatgpt",
+      "status": "hypothetical",
+      "file": "chatgpt-textarea-renamed.html",
+      "path": "/",
+      "description": "textarea name=message with placeholder 'Message ChatGPT', plus a decoy search textarea at the top.",
+      "source": "Hypothetical: the textarea gets a new name; a sidebar 'Search chats' textarea is a decoy.",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": null,
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-messages-no-attrs",
+      "site": "chatgpt",
+      "status": "hypothetical",
+      "file": "chatgpt-messages-no-attrs.html",
+      "path": "/",
+      "description": "Today's textarea, but user messages are plain divs with no data-* or role.",
+      "source": "Hypothetical: user messages lose their data attributes; the composer still matches.",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": null,
+        "sendBy": "enter",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-unlabeled-contenteditable",
+      "site": "chatgpt",
+      "status": "hypothetical",
+      "file": "chatgpt-unlabeled-contenteditable.html",
+      "path": "/",
+      "description": "Only a large contenteditable div near the bottom of the page identifies the composer.",
+      "source": "Hypothetical: a bare contenteditable with no role, label, placeholder, id or test id.",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "chatgpt-late-mount-remount",
+      "site": "chatgpt",
+      "status": "hypothetical",
+      "file": "chatgpt-late-mount-remount.html",
+      "path": "/",
+      "description": "Editor appears late and is replaced on client-side navigation; old messages load in.",
+      "source": "Hypothetical control: today's selectors, but the composer mounts 1.5 s after load and is re-mounted on navigation to another chat.",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": null,
+        "sendBy": "click",
+        "before": "navigate"
+      }
+    },
+    {
+      "id": "chatgpt-editor-in-iframe",
+      "site": "chatgpt",
+      "status": "hypothetical",
+      "file": "chatgpt-editor-in-iframe.html",
+      "path": "/",
+      "description": "Composer lives in a same-origin srcdoc iframe; Wisp's content script only runs in the top frame.",
+      "source": "Hypothetical: the composer moves into an iframe, out of the content script's reach.",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": "#composer-frame",
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "claude-2026-11",
+      "site": "claude",
+      "status": "documented",
+      "file": "claude-2026-11.html",
+      "path": "/new",
+      "description": "Claude today: ProseMirror div with data-testid=chat-input.",
+      "source": "src/extension/sites.ts and commit b587ed1 (checked by hand in Chrome on 2026-11-05): [data-testid=chat-input] ProseMirror, [data-testid=user-message], /new then /chat/<id>.",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "enter",
+        "before": null
+      }
+    },
+    {
+      "id": "claude-testids-renamed",
+      "site": "claude",
+      "status": "hypothetical",
+      "file": "claude-testids-renamed.html",
+      "path": "/new",
+      "description": "Editor data-testid=composer-input with role=textbox; user messages data-testid=human-turn.",
+      "source": "Hypothetical: test ids renamed and the editor no longer carries the ProseMirror class.",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "enter",
+        "before": null
+      }
+    },
+    {
+      "id": "claude-generic-textbox",
+      "site": "claude",
+      "status": "hypothetical",
+      "file": "claude-generic-textbox.html",
+      "path": "/new",
+      "description": "div[contenteditable][role=textbox][aria-label='Message Claude'] and nothing else.",
+      "source": "Hypothetical: only a generic contenteditable with role=textbox and aria-label remains; messages keep their test id.",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "claude-plain-textarea",
+      "site": "claude",
+      "status": "hypothetical",
+      "file": "claude-plain-textarea.html",
+      "path": "/new",
+      "description": "<textarea placeholder='How can I help you today?'> with no name, id or test id.",
+      "source": "Hypothetical: Claude switches to a plain textarea (as ChatGPT did in 2026-11) whose placeholder names none of message/prompt/ask/chat.",
+      "harness": {
+        "editor": "#editor-slot textarea",
+        "frame": null,
+        "sendBy": "click",
+        "before": null
+      }
+    },
+    {
+      "id": "claude-messages-no-attrs",
+      "site": "claude",
+      "status": "hypothetical",
+      "file": "claude-messages-no-attrs.html",
+      "path": "/new",
+      "description": "Today's editor, user messages are plain divs.",
+      "source": "Hypothetical: user messages lose data-testid; the editor still matches.",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "enter",
+        "before": null
+      }
+    },
+    {
+      "id": "claude-remount-new-shape",
+      "site": "claude",
+      "status": "hypothetical",
+      "file": "claude-remount-new-shape.html",
+      "path": "/new",
+      "description": "After navigating to /chat/<id>, the editor is div[contenteditable][role=textbox][aria-label='Reply to Claude'] without test id or class.",
+      "source": "Hypothetical: today's editor on /new, but opening an existing chat re-mounts a differently shaped editor (selector stops matching mid-session).",
+      "harness": {
+        "editor": "#editor-slot [contenteditable]",
+        "frame": null,
+        "sendBy": "enter",
+        "before": "navigate"
+      }
+    }
+  ]
+}
