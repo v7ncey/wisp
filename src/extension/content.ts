@@ -4,7 +4,21 @@ import { requestPersonalized } from "../core/personalize-client";
 import type { CoachContext, Suggestion } from "../core/types";
 import { WispUI } from "../ui/wisp-ui";
 import { WispController } from "../ui/controller";
-import { adapterFor, editorText, isSameChat } from "./sites";
+import {
+  adapterFor,
+  clearedAfterSend,
+  connectionLine,
+  editorText,
+  findComposer,
+  isChatPage,
+  isSameChat,
+  isSendKey,
+  shouldShowNotice,
+  ISSUES_URL,
+  NOTICE_TEXT,
+  USER_MESSAGE_FALLBACK,
+  type FindStrategy,
+} from "./sites";
 import { API_URL, DEFAULT_SETTINGS, SETTINGS_KEY, type Settings } from "./config";
 
 const adapter = adapterFor(location.hostname);
@@ -22,9 +36,29 @@ async function start() {
   let unsavedChatId = `new-${Date.now()}`;
   const urlChatId = () => a.chatId(location.pathname);
   const chatId = () => urlChatId() ?? unsavedChatId;
-  const userMessages = () => document.querySelectorAll(a.userMessageSelector).length;
-  const editorEl = () => document.querySelector<HTMLElement>(a.editorSelector);
+  const userMessages = () =>
+    document.querySelectorAll(a.userMessageSelector).length || document.querySelectorAll(USER_MESSAGE_FALLBACK).length;
+
+  // The chat box: the adapter's selector, else a backup finder (see findComposer). A backup
+  // match is reused while it stays on the page, so the fallback scan doesn't run on every keystroke.
+  let found: { el: HTMLElement; strategy: FindStrategy } | null = null;
+  let loggedStrategy: FindStrategy | null | undefined;
+  const locate = () => {
+    const primary = document.querySelector<HTMLElement>(a.editorSelector);
+    if (primary) found = { el: primary, strategy: "primary" };
+    else if (!found || found.strategy === "primary" || !found.el.isConnected) found = findComposer(a);
+    const strategy = found?.strategy ?? null;
+    // Log when the primary selector stops working (and when it recovers), not on every check.
+    if (strategy !== loggedStrategy && loggedStrategy !== undefined) console.info(`[Wisp] chat box: ${strategy ?? "not found"}`);
+    loggedStrategy = strategy;
+    return found;
+  };
+  const editorEl = () => locate()?.el ?? null;
   const readDraft = () => editorText(editorEl());
+  const inEditor = (t: EventTarget | null) => {
+    const el = editorEl();
+    return !!el && t instanceof Node && el.contains(t);
+  };
 
   const context = (): CoachContext => ({ site: a.site, chatId: chatId(), userMessageCount: userMessages(), now: Date.now() });
 
@@ -43,6 +77,7 @@ async function start() {
 
   ui.setPanelProvider(async () => ({
     memory: await coach.snapshot(),
+    connection: connectionLine(locate()?.strategy ?? null),
     personalizeOn: settings.personalize,
     personalizeNote:
       "Off by default. When on, the draft that triggered a tip is sent to Wisp's server and Google Gemini to tailor the wording. Everything else stays on this computer.",
@@ -56,12 +91,48 @@ async function start() {
 
   // Typing: listen at the document level because these sites replace the editor element on navigation.
   let lastDraft = "";
+  let lastTypedAt = 0;
   document.addEventListener(
     "input",
     (e) => {
-      if (!(e.target instanceof Element) || !e.target.closest(a.editorSelector)) return;
+      lastTypedAt = Date.now();
+      if (!inEditor(e.target)) return;
       lastDraft = readDraft();
       controller.onInput();
+    },
+    true,
+  );
+
+  const send = (text: string) => {
+    lastDraft = "";
+    void controller.onSend(text);
+  };
+
+  // Backup send detection, for when user messages can't be found: after Enter in the chat box or a
+  // button click, the draft that was there is gone. Whichever detector sees the send first counts it.
+  const watchForSend = (draftAtTrigger: string) => {
+    if (!draftAtTrigger) return;
+    let tries = 0;
+    const poll = window.setInterval(() => {
+      if (lastDraft !== draftAtTrigger || ++tries > 20) return window.clearInterval(poll);
+      if (clearedAfterSend(draftAtTrigger, readDraft())) {
+        window.clearInterval(poll);
+        send(draftAtTrigger);
+      }
+    }, 100);
+  };
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      lastTypedAt = Date.now();
+      if (isSendKey(e) && inEditor(e.target)) watchForSend(lastDraft);
+    },
+    true,
+  );
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (e.target instanceof Element && e.target.closest("button, [role=button]")) watchForSend(lastDraft);
     },
     true,
   );
@@ -81,21 +152,43 @@ async function start() {
         knownCount = userMessages();
         lastDraft = "";
         ui.hide();
+        missingSince = locate() ? null : Date.now();
         return;
       }
       // A new chat just got its id because its first message was sent: keep going.
     }
     const count = userMessages();
     if (count > knownCount) {
-      if (lastDraft && !readDraft()) {
-        const text = lastDraft;
-        lastDraft = "";
-        void controller.onSend(text);
-      }
+      if (lastDraft && !readDraft()) send(lastDraft);
       knownCount = count;
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // Health check: if the chat box can't be found for ~10 s (after load, after a navigation, or
+  // because a selector stopped matching), say so once per page load instead of failing silently.
+  let missingSince: number | null = Date.now();
+  let noticeShown = false;
+  window.setInterval(() => {
+    if (locate()) {
+      missingSince = null;
+      ui.hideNotice();
+      return;
+    }
+    missingSince ??= Date.now();
+    const health = {
+      now: Date.now(),
+      missingSince,
+      lastTypedAt,
+      noticeShownThisPage: noticeShown,
+      tipOpen: ui.isOpen,
+      onChatPage: isChatPage(a.site, location.pathname),
+    };
+    if (shouldShowNotice(health)) {
+      noticeShown = true;
+      ui.notice(NOTICE_TEXT, { href: ISSUES_URL, label: "Report it on GitHub" });
+    }
+  }, 1000);
 }
 
 /** Appends text to the editor the way a user would type it: a <textarea> or a contenteditable (ProseMirror) div. */

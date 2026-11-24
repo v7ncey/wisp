@@ -13,6 +13,8 @@ export interface PanelInfo {
   memory: WispMemory;
   personalizeOn: boolean;
   personalizeNote: string;
+  /** How Wisp is connected to the page's text box (extension only), e.g. "Connected to the chat box". */
+  connection?: string;
   onTogglePersonalize(on: boolean): void;
   onReset?(): void;
 }
@@ -50,6 +52,7 @@ export class WispUI {
   private current: Suggestion | null = null;
   private peekTimer: number | undefined;
   private panelProvider: (() => Promise<PanelInfo>) | null = null;
+  private noticeOpen = false;
 
   constructor(host: HTMLElement, opts: { mode: "fixed" | "contained" }) {
     this.root = host.attachShadow({ mode: "open" });
@@ -79,6 +82,7 @@ export class WispUI {
   /** Peek first, then speak. */
   show(s: Suggestion, h: ShowHandlers, opts: { personalizing?: boolean; peekMs?: number } = {}) {
     this.current = s;
+    this.noticeOpen = false;
     clearTimeout(this.peekTimer);
     this.render(s, h, opts.personalizing ? { state: "loading" } : { state: "built-in" });
     this.wrap.dataset.state = "peek";
@@ -106,11 +110,33 @@ export class WispUI {
   /** A short message that isn't a tip (e.g. "you did it yourself"). */
   toast(text: string, ms = 3500) {
     if (this.current) return;
+    this.noticeOpen = false;
     this.bubble.innerHTML = `<p class="toast">${esc(text)}</p>`;
     this.wrap.dataset.state = "open";
     window.setTimeout(() => {
       if (!this.current) this.wrap.dataset.state = "idle";
     }, ms);
+  }
+
+  /**
+   * A dismissible note about Wisp itself (e.g. it can't find the chat box). Never covers a tip;
+   * the next tip replaces it. Closes with its × or the orb.
+   */
+  notice(text: string, link?: { href: string; label: string }) {
+    if (this.current) return;
+    this.bubble.innerHTML = `
+      <header><strong>Tips are paused</strong><button class="x" aria-label="Close">×</button></header>
+      <p class="notice">${esc(text)}</p>
+      ${link ? `<p class="fine"><a href="${esc(link.href)}" target="_blank" rel="noopener">${esc(link.label)}</a></p>` : ""}`;
+    this.bubble.querySelector(".x")!.addEventListener("click", () => this.hideNotice());
+    this.noticeOpen = true;
+    this.wrap.dataset.state = "open";
+  }
+
+  /** Closes the notice if it's still the thing showing. */
+  hideNotice() {
+    if (this.noticeOpen && !this.current) this.wrap.dataset.state = "idle";
+    this.noticeOpen = false;
   }
 
   /** Eyes glance toward the text box while the user types. */
@@ -120,12 +146,14 @@ export class WispUI {
 
   private async toggleOrb() {
     if (this.isOpen && !this.current) {
+      this.noticeOpen = false;
       this.wrap.dataset.state = "idle";
       return;
     }
     if (this.current) return; // tip already open
     if (!this.panelProvider) return;
     const info = await this.panelProvider();
+    this.noticeOpen = false;
     this.renderPanel(info);
     this.wrap.dataset.state = "open";
   }
@@ -147,6 +175,7 @@ export class WispUI {
         <div><dt>Dismissed</dt><dd>${totals.dismissed}</dd></div>
         <div><dt>Did it yourself</dt><dd>${totals.learned}</dd></div>
       </dl>
+      ${info.connection ? `<p class="fine conn">${esc(info.connection)}</p>` : ""}
       <label class="toggle"><input type="checkbox" ${info.personalizeOn ? "checked" : ""}/> Personalize tips with AI</label>
       <p class="fine">${esc(info.personalizeNote)}</p>
       ${info.memory.muted.length ? `<p class="fine">Muted tips: ${info.memory.muted.length}</p>` : ""}
